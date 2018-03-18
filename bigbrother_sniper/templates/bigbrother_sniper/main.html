@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>Bigbrother 관리 시스템</title>
+
+{% endblock %}
+
+{% block body %}\
+<div id="bigbrother-web-app" ng-app="BigBrotherApp"  ng-controller="BigBrotherController">
+  <div class="root-panel container"  ng-show="LoginPage" ng-init='LoginPage=true' ng-include="'../login'">
+
+  </div>  <!-- LoginPage -->
+
+  <div class="local-Storage" ng-controller="localStorage">
+
+  </div>
+
+  <div id="virtual-class-container"class="root-panel container"  ng-show="VirtualClassPage"  ng-if="VirtualClassPage" ng-include="'../virtual_class'">
+
+  </div> <!-- UserControllPage -->
+
+</div>
+
+<div id="particles-js"></div>
+{% endblock %}

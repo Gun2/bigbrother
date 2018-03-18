@@ -1,0 +1,285 @@
+
+<script>
+
+
+var myDataView;
+var myDataViewList;
+
+function loadDataView(){
+
+    myDataView = new dhtmlXDataView({
+				container:"data_container",
+				type:{
+					template
+					:
+
+					"<div class='panel panel-#PanelStatus#' style='width:130px'>" +
+					    "<div class='panel-heading' style='text-align: center'>#AttendanceCheckStatus#</div>" +
+					    "<div class='panel-body'>" +
+					        "<img src='#ImgSRC#' style='width:100px;height:100px'>" +
+					    "</div>" +
+					    "<div class='panel-footer' style='text-align: center'>"+
+					    "#Name# <br>" +
+					    "<div id='specificControl_#id#' data-toggle='popover' data-popover-content='#specificControl'></div>" +
+					    "#IdNum#" +
+					    "</div>" +
+					"</div>"
+
+
+					,
+					height:280,
+					width:150
+				}
+
+			});
+}
+
+</script>
+<nav class="navbar navbar-inverse">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="JavaScript:window.location.reload()">Big Brothe Sniper</a>
+    </div>
+    <ul class="nav navbar-nav">
+      <li onclick="activeMyInfo()" class="active"><a data-toggle="tab" href="#myinfo" id="chul1">알림판</a></li>
+      <li onclick="activeChulCheck()"><a data-toggle="tab" href="#bigbrother_sniper" id="chul2">규칙 설정</a></li>
+      <li onclick="activeChulCheckList()"><a data-toggle="tab" href="#bigbrother_sniper" id="chul3"></a></li>
+    </ul>
+      <ul class="navbar-form navbar-right" ng-controller="LogoutController">
+          <input name="logout" class="btn btn-danger" tabindex="4" value="종료" ng-click="doLogout()" onclick="void()">
+          <!-- Modal -->
+          <div class="modal fade" id="logoutCheck" role="dialog">
+              <div class="modal-dialog" >
+
+                  <!-- Modal content-->
+                  <div class="modal-content">
+                      <div class="modal-header">
+                          <button type="button" class="close" data-dismiss="modal">&times;</button>
+                          <h4 class="modal-title">경고</h4>
+                      </div>
+                      <div class="modal-body">
+                          <p>정말 로그아웃 하시겠습니까?</p>
+                      </div>
+                      <div class="modal-footer">
+                          <button type="submit" class="btn btn-default" data-dismiss="modal">Close</button>
+                          <button type="button" class="btn btn-danger" data-dismiss="modal" ng-click="doLogout()">Logout</button>
+                      </div>
+                  </div>
+
+              </div>
+          </div>
+      </ul>
+  </div>
+</nav>
+
+<div class="tab-content bigbrother-content container">
+	<div id="myinfo" class="tab-pane fade in active" >
+
+        <div class="panel panel-default" ng-controller="BigbrotherController" ng-init="loadalertlist();startInterval()">
+  			<div class="panel-heading">알림</div>
+
+                <div class="panel-body">
+                    <div class="row" >
+                        <div class="col-md-3">
+                            <div class="modal fade" id="failednumber" role="dialog">
+                                <div class="modal-dialog" >
+
+                      <!-- Modal content-->
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                            <h4 class="modal-title">경고</h4>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="submit" class="btn btn-default" data-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="col-md-7">
+                        </div>
+                        <div class="col-md-2">
+                            <input type="button" id ="subject_submit" class="btn btn-primary" style="width:100%;margin-bottom:10px" value="전체 삭제" ng-click="alertAllDelete()">
+                        </div>
+
+                    </div>
+                    {% verbatim %}
+                    <div class="well" ng-repeat="alert in alerts">
+                        [{{alert.drop_on_flag}}] [이름 : {{alert.username}}]          [키워드 : {{alert.keyword}}]    [기록 시간 :{{alert.recordTime}}]
+                        <button id="{{alert.id+0}}" type="button" class="btn btn-default" style="float: right;height:40px;margin-top:-9px;" ng-click="clickdelete($event.target)">삭제</button>
+                        <button id="{{alert.id}}" type="button" class="btn btn-success" style="float: right;height:40px;margin-top:-9px;" ng-click="clickpreview($event.target)">사진보기</button>
+
+                        <div class="modal fade" id="deleteCheck" role="dialog">
+                            <div class="modal-dialog" >
+                              <!-- Modal content-->
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                        <h4 class="modal-title">경고</h4>
+                                    </div>
+                                <div class="modal-body">
+                                <p>정말 삭제 하시겠습니까?</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="submit" class="btn btn-default" data-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-danger" data-dismiss="modal" ng-click="deleteAlertFilter()">Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal fade" id="deleteAllModal" role="dialog">
+                        <div class="modal-dialog" >
+                            <!-- Modal content-->
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                    <h4 class="modal-title">경고</h4>
+                                </div>
+                            <div class="modal-body">
+                                <p>정말 모든 알림기록을 삭제 하시겠습니까?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-default" data-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-danger" data-dismiss="modal" ng-click="alertAllDeleteStart()">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+                <div class="modal fade" id="ViewPicture" role="dialog">
+                    <div class="modal-dialog" >
+                        <!-- Modal content-->
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                <h4 class="modal-title">test</h4>
+                            </div>
+                            <div class="modal-body">
+                                <img src='data:image/jpeg;base64,{{base64EncodeImg}}'  />
+                                <p>testtest</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-default" data-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-danger" data-dismiss="modal" ng-click="deleteAlertFilter()">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <p style="float:right">총 {{alerts.length}}개의 알림이 있음</p>
+                    {% endverbatim %}
+        </div>
+    </div>
+
+</div>
+<div id="bigbrother_sniper" class="tab-pane fade" ng-controller="BigbrotherSniperCheckController" ng-init="loadFilterListText();loadFilterListLabel();startInterval()">
+    <div class="panel panel-default">
+        <div class="panel-heading">규칙<i class="fa fa-cog fa-spin" ng-click="modalUp()" style="cursor:pointer;float: right; font-size:24px"></i></div>
+            <div class="panel-body">
+                <!--text-->
+                     {% verbatim %}
+                <div class="well" ng-repeat="textFilter in textFilters">
+                    {{textFilter.drop_on_flag}} 제한 사물명 : {{textFilter.text_value}} 분야 : {{textFilter.explain}}
+                    <button id="{{textFilter.id}}" type="button" class="btn btn-default" style="float: right;height:40px;margin-top:-9px;" ng-click="clickdelete($event.target)">삭제</button>
+
+                    <div class="modal fade" id="deleteText" role="dialog">
+                        <div class="modal-dialog" >
+                          <!-- Modal content-->
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                    <h4 class="modal-title">경고</h4>
+                                </div>
+                                <div class="modal-body">
+                                    <p>정말 삭제 하시겠습니까?</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="submit" class="btn btn-default" data-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-danger" data-dismiss="modal" ng-click="deleteAlertFilterText();loadFilterListText();loadFilterListLabel()">Delete</button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+
+                <hr>
+			{% endverbatim %}
+                    <!--label-->
+                     {% verbatim %}
+                <div class="well" ng-repeat="labelFilter in labelFilters">
+                    {{labelFilter.drop_on_flag}} 제한 텍스트 : {{labelFilter.label_value}} 분야 : {{labelFilter.explain}}
+                    <button id="{{labelFilter.id}}" type="button" class="btn btn-default" style="float: right;height:40px;margin-top:-9px;" ng-click="clickdelete2($event.target)">삭제</button>
+
+                    <div class="modal fade" id="deleteLabel" role="dialog">
+                        <div class="modal-dialog" >
+                  <!-- Modal content-->
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                        <h4 class="modal-title">경고</h4>
+                                </div>
+                                <div class="modal-body">
+                                    <p>정말 삭제 하시겠습니까?</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="submit" class="btn btn-default" data-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-danger" data-dismiss="modal" ng-click="deleteAlertFilterLabel();">Delete</button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+
+                <hr>
+			    {% endverbatim %}
+
+        <!--필터 규칙 설정-->
+    <div class="modal fade" id="beaconReachSetting" role="dialog" aria-labelledby="settingTitle" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">닫기</span>
+                    </button><link rel="stylesåheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+                    <h4 class="modal-title" id="settingTitle">인식 필터값 설정 <i class="fa fa-question-circle-o" data-toggle="explainIcon2" data-trigger="hover" title="인식 필터값 설정이란" data-html="true" data-content="필터:걸러 낼 값<br>explain:설명(주석)<br>옵션1)텍스트인식과 사물인식<br>옵션2)alert(알림), drop(삭제) " data-placement="right"></i> </h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                                <input type="text" name="filter" id="filter" data-toggle="popover" data-trigger="focus" tabindex="1" class="form-control"  placeholder="필터 " value="filter" ng-model="createRuleMaker.filter">
+                     </div>
+                    <div class="form-group">
+                                <input type="text" name="explain" id="explain" data-toggle="popover" data-trigger="focus" tabindex="1" class="form-control" ng-keyup="doCheckId()" placeholder="explain" value="explain" ng-model="createRuleMaker.explain">
+                      </div>
+                    <form>
+                        <input type="radio" name="val" value="0" ng-model="createRuleMaker.val">텍스트
+                        <input type="radio" name="val" value="1" ng-model="createRuleMaker.val">사물<br>
+                    </form>
+                    <hr>
+                    <form>
+                        <input type="radio" name="dropFlag" value="0"ng-model="createRuleMaker.dropFlag">Alert
+                        <input type="radio" name="dropFlag" value="1" ng-model="createRuleMaker.dropFlag">Drop<br>
+                    </form>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" ng-click="createRuleMaker();startInterval()" data-dismiss="modal">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!------------------------------------------------------------------------------->
+</div>
+
+
+        </div>
+    </div>
+</div>
