@@ -57,9 +57,9 @@ class IdRequestSerializer(serializers.Serializer):
     id = serializers.CharField()
 
 class PostAlertMessageLogtSerializer(serializers.Serializer):
-    keyword = serializers.CharField(max_length=36)
+    keyword = serializers.CharField(max_length=72)
     drop_on_flag = serializers.BooleanField(default=False)
-    pictureBase64 = serializers.CharField(max_length=512000, default='')
+    pictureBase64 = serializers.CharField(max_length=1024000, default='')
 
 class BigbrotherRuleManager(serializers.Serializer):
     filter = serializers.CharField(max_length=36)

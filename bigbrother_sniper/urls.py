@@ -42,7 +42,9 @@ from .views import (
                     DeleteAlertLabel,
                     CreateRuleMaker,
                     PostAlertMessageListPreview,
-                    DeleteAlertLogAll)
+                    DeleteAlertLogAll,
+                    LoadAlertList,
+                    LoadAlertImage)
 
 
 from rest_framework_jwt.views import obtain_jwt_token
@@ -80,5 +82,6 @@ urlpatterns = [
     url(r'^api/delete/alert/label/$', DeleteAlertLabel.as_view()),
     url(r'^api/delete/alert/log/all/$', DeleteAlertLogAll.as_view()),
     url(r'^api/create/rule/maker/$', CreateRuleMaker.as_view()),
-
+    url(r'^api/load/alert/list/$', LoadAlertList.as_view()),
+    url(r'^api/load/alert/image/$', LoadAlertImage.as_view()),
 ]

@@ -6,7 +6,8 @@ from bigbrother_sniper.models import (
                                      ProfileImage,
                                      TextGuardList,
                                      LabelGuardList,
-                                     PostAlertMessageLog
+                                     PostAlertMessageLog,
+                                     GuardOrUtilImageSavezone
                                      )
 
 # Register your models here.
@@ -17,3 +18,4 @@ from bigbrother_sniper.models import (
 admin.site.register(TextGuardList)
 admin.site.register(LabelGuardList)
 admin.site.register(PostAlertMessageLog)
+admin.site.register(GuardOrUtilImageSavezone)

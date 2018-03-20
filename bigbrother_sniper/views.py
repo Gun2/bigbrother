@@ -28,7 +28,8 @@ from .models import ( ProfessorProfile,
                       ProfileImage,
                       TextGuardList,
                       LabelGuardList,
-                      PostAlertMessageLog
+                      PostAlertMessageLog,
+                      GuardOrUtilImageSavezone
                       )
 
 from django.contrib.auth.models import User
@@ -95,7 +96,6 @@ class RegistrationView(APIView):
                     user=newUser,
                     student_id=serializer.validated_data['id'],
                     department=Department.objects.get(pk=serializer.validated_data['department']),
-                    Crypt_rand_N=Crypt_rand_N,
                 )
                 newStudentProfile.save()
 
@@ -266,7 +266,8 @@ class PostAlertMessage(APIView):
                     drop_on_flag=tmpFlag,
                     keyword=serializer.validated_data['keyword'],
                     pictureBase64=serializer.validated_data['pictureBase64'],
-                    recordTime=timezone.now()
+                    recordTime=timezone.now(),
+                    user = request.user
                 )
                 postLog.save()
                 return Response(serializer.data)
@@ -522,3 +523,70 @@ class DeleteAlertLogAll(APIView):
         else:
             return Response("Error.", status=status.HTTP_403_FORBIDDEN)
 
+
+
+
+
+class LoadAlertList(APIView):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (JSONWebTokenAuthentication,)
+
+    def get(self, request):
+
+        if request.user:
+            AlertLists = PostAlertMessageLog.objects.filter(user = request.user)
+
+            listAlerts = []
+
+            for AlertList in AlertLists:
+                if AlertList.drop_on_flag==True:
+                    tmpFlag ="위험 판정"
+                else:
+                    tmpFlag="경고 판"
+
+                listAlerts.append({
+                    "id": AlertList.pk,
+                    "keyword": AlertList.keyword,
+                    "recordTime": AlertList.recordTime,
+                    "drop_on_flag" :tmpFlag.decode('utf-8')
+                })
+            return Response(listAlerts)
+
+        else:
+
+            return Response("Error.", status=status.HTTP_403_FORBIDDEN)
+
+
+
+class LoadAlertImage(APIView):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (JSONWebTokenAuthentication,)
+
+    def post(self, request):
+
+        if request.user:
+            serializer = IdRequestSerializer(data=request.data)
+
+            if serializer.is_valid():
+                AlertList = PostAlertMessageLog.objects.get(pk = serializer.validated_data['id'])
+
+                listAlerts = []
+
+                #drop이면 이미지 숨기기
+                if AlertList.drop_on_flag == True:
+                    guardImage = GuardOrUtilImageSavezone.objects.get(pictureName="guardPic")
+
+                    listAlerts.append({
+                        "pictureBase64": guardImage.pictureBase64,
+                        "cause": AlertList.cause
+                    })
+                else:
+                    listAlerts.append({
+                        "pictureBase64": AlertList.pictureBase64,
+                        "cause": AlertList.cause
+                    })
+                return Response(listAlerts)
+
+        else:
+
+            return Response("Error", status=status.HTTP_403_FORBIDDEN)
