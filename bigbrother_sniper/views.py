@@ -17,7 +17,8 @@ from bigbrother_sniper.serializers import ( RegistrationSerializer,
                                            DeleteAlertSerializer,
                                            IdRequestSerializer,
                                            PostAlertMessageLogtSerializer,
-                                           BigbrotherRuleManager)
+                                           BigbrotherRuleManager,
+                                           DateListenerSerializer)
 
 
 
@@ -29,7 +30,9 @@ from .models import ( ProfessorProfile,
                       TextGuardList,
                       LabelGuardList,
                       PostAlertMessageLog,
+                      DateRecord,
                       GuardOrUtilImageSavezone
+
                       )
 
 from django.contrib.auth.models import User
@@ -256,18 +259,64 @@ class PostAlertMessage(APIView):
         if request.user:
             serializer = PostAlertMessageLogtSerializer(data=request.data)
             if serializer.is_valid():
+
+                #날짜 기록
+                dateRecord = DateRecord.objects.filter(date = (str)(timezone.now())[0:10])
+                if dateRecord:
+                    DateNow = dateRecord.first()
+                else:
+                    createDate = DateRecord.objects.create(
+                        date = (str)(timezone.now())[0:10]
+                    )
+                    createDate.save()
+                    DateNow = DateRecord.objects.get(date = (str)(timezone.now())[0:10])
+
+
+                #사진 설명 넣기
+                explainLabel = "사물 : "
+
+                LabelFilter = LabelGuardList.objects.all()
+                for index in LabelFilter:
+
+                    if "["+index.label_value+"]" in serializer.validated_data['keyword'] :
+                        explainLabel+=" "+index.explain.encode('utf-8')
+                if explainLabel == "사물 : ":
+                    explainLabel =""
+                else:
+                    explainLabel += " 관련"
+
+                explainText = "텍스트 : "
+
+                TextFilter = TextGuardList.objects.all()
+                for index in TextFilter:
+                    if "["+index.text_value+"]" in serializer.validated_data['keyword'] :
+                        explainText += " " + index.explain.encode('utf-8')
+
+                if explainText == "텍스트 : ":
+                    explainText =""
+                else:
+                    explainText += " 관련"
+
                 if serializer.validated_data['drop_on_flag']==True:
                     tmpFlag = True
+                    explain = explainLabel + "\n"+explainText + "\n위와 같은 이유로 사진을 차단하였습니다."
                 else:
                     tmpFlag = False
-                username = request.user.first_name+request.user.last_name
+                    explain = explainLabel + "\n"+explainText + "\n위와 같은 이유로 사진에 문제점이 발견되었습니다."
+
+
+
+                username = request.user.last_name+request.user.first_name
                 postLog = PostAlertMessageLog.objects.create(
                     username=username,
                     drop_on_flag=tmpFlag,
                     keyword=serializer.validated_data['keyword'],
                     pictureBase64=serializer.validated_data['pictureBase64'],
                     recordTime=timezone.now(),
-                    user = request.user
+                    user = request.user,
+                    date=DateNow,
+                    cause = explain
+
                 )
                 postLog.save()
                 return Response(serializer.data)
@@ -284,8 +333,8 @@ class PostAlertMessageListView(APIView):
     def get(self, request):
 
         if request.user.is_staff:
-            AlertLogs = PostAlertMessageLog.objects.all()
-
+            AlertLogs = PostAlertMessageLog.objects.filter(alertView = True)
+            #print (str)(timezone.now())[0:10]
             alerts = []
 
             for Alert in AlertLogs:
@@ -500,9 +549,13 @@ class PostAlertMessageListPreview(APIView):
             serializer = DeleteAlertSerializer(data=request.data)
             if serializer.is_valid():
                 id = serializer.validated_data['id']
-                pictureBase64 = PostAlertMessageLog.objects.get(pk=id)
-
-            return Response(pictureBase64.pictureBase64)
+                selectAlert = PostAlertMessageLog.objects.get(pk=id)
+                results = {
+                    "pictureBase64" : selectAlert.pictureBase64,
+                    "keyword" : selectAlert.keyword,
+                    "explain" : selectAlert.cause
+                }
+            return Response(results)
         else:
             return Response("Unknown User request", status=status.HTTP_403_FORBIDDEN)
 
@@ -542,13 +595,13 @@ class LoadAlertList(APIView):
                 if AlertList.drop_on_flag==True:
                     tmpFlag ="위험 판정"
                 else:
-                    tmpFlag="경고 판"
+                    tmpFlag="경고 판정"
 
                 listAlerts.append({
                     "id": AlertList.pk,
                     "keyword": AlertList.keyword,
                     "recordTime": AlertList.recordTime,
-                    "drop_on_flag" :tmpFlag.decode('utf-8')
+                    "drop_on_flag" :tmpFlag
                 })
             return Response(listAlerts)
 
@@ -590,3 +643,103 @@ class LoadAlertImage(APIView):
         else:
 
             return Response("Error", status=status.HTTP_403_FORBIDDEN)
+
+
+
+
+
+
+class AlertLogDateSearch(APIView):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (JSONWebTokenAuthentication,)
+
+    def get(self, request):
+        if request.user.is_staff:
+            alertDataLists = DateRecord.objects.all()
+
+            results = []
+
+            for alertDataList in alertDataLists:
+                results.append({
+                    "date": alertDataList.date,
+                })
+
+
+            return Response(results)
+
+        else:
+            return Response("no permission", status=status.HTTP_403_FORBIDDEN)
+
+class AlertLogDateSearchView(APIView):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (JSONWebTokenAuthentication,)
+
+    def post(self, request):
+        if request.user.is_staff:
+            serializer = DateListenerSerializer(data=request.data)
+            if serializer.is_valid():
+                SearchDate = DateRecord.objects.get(date = serializer.validated_data['date'])
+
+                SearchAlertLists = PostAlertMessageLog.objects.filter(date = SearchDate)
+                results = []
+
+                for SearchAlertList in SearchAlertLists:
+                    if SearchAlertList.drop_on_flag == True:
+                        tmpFlag = "위험 판정"
+                    else:
+                        tmpFlag = "경고 판정"
+
+                    results.append({
+                        "id": SearchAlertList.pk,
+                        "keyword": SearchAlertList.keyword,
+                        "recordTime": SearchAlertList.recordTime,
+                        "drop_on_flag": tmpFlag
+                    })
+                return Response(results)
+        else:
+            return Response("no permission", status=status.HTTP_403_FORBIDDEN)
+
+
+
+
+class HidnAlertLog(APIView):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (JSONWebTokenAuthentication,)
+
+    def post(self, request):
+
+        serializer = DeleteAlertSerializer(data=request.data)
+
+        if serializer.is_valid():
+            id = serializer.validated_data['id']
+
+            if request.user.is_staff:
+                alertDelete = PostAlertMessageLog.objects.get(pk=id)
+                alertDelete.alertView = False
+                alertDelete.save()
+                result = {
+                    "result": 1
+                }
+            return Response(result)
+
+        else:
+            return Response(" Error.", status=status.HTTP_403_FORBIDDEN)
+
+
+
+class HidnAlertLogAll(APIView):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (JSONWebTokenAuthentication,)
+
+    def get(self, request):
+
+        if request.user.is_staff:
+            alertDelete = PostAlertMessageLog.objects.all()
+            for index in alertDelete:
+                index.alertView = False
+                index.save()
+
+            return Response("success All Hidn", status=status.HTTP_200_OK)
+
+        else:
+            return Response("Error.", status=status.HTTP_403_FORBIDDEN)

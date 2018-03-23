@@ -44,7 +44,11 @@ from .views import (
                     PostAlertMessageListPreview,
                     DeleteAlertLogAll,
                     LoadAlertList,
-                    LoadAlertImage)
+                    LoadAlertImage,
+                    AlertLogDateSearch,
+                    AlertLogDateSearchView,
+                    HidnAlertLog,
+                    HidnAlertLogAll)
 
 
 from rest_framework_jwt.views import obtain_jwt_token
@@ -77,11 +81,18 @@ urlpatterns = [
     url(r'^api/bigbrother/post/alert/message/list/preview/$', PostAlertMessageListPreview.as_view()),
     url(r'^api/bigbrother/filter/list/view/text/$', FilterListViewText.as_view()),
     url(r'^api/bigbrother/filter/list/view/label/$', FilterListViewLabel.as_view()),
+    url(r'^api/hidn/alert/log/$', HidnAlertLog.as_view()),
+    url(r'^api/hidn/alert/log/all/$', HidnAlertLogAll.as_view()),
     url(r'^api/delete/alert/log/$', DeleteAlertLog.as_view()),
+    url(r'^api/delete/alert/log/all/$', DeleteAlertLogAll.as_view()),
     url(r'^api/delete/alert/text/$', DeleteAlertText.as_view()),
     url(r'^api/delete/alert/label/$', DeleteAlertLabel.as_view()),
-    url(r'^api/delete/alert/log/all/$', DeleteAlertLogAll.as_view()),
     url(r'^api/create/rule/maker/$', CreateRuleMaker.as_view()),
     url(r'^api/load/alert/list/$', LoadAlertList.as_view()),
     url(r'^api/load/alert/image/$', LoadAlertImage.as_view()),
+    url(r'^api/alert/list/log/date/$', AlertLogDateSearch.as_view()),
+    url(r'^api/alert/list/log/date/view/$', AlertLogDateSearchView.as_view()),
+
+
+
 ]

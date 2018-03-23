@@ -491,9 +491,12 @@ app.controller('BigbrotherController', function($scope, $http, $interval){
 Bigbrother 디비 삭제 (로그삭제
 */
 
-    $scope.deleteAlertFilter = function(){
-    $interval.cancel(timeIntervalReset);
-        $http.post('/bigbrother_sniper/api/delete/alert/log/',{"id": deleteId}, {
+
+
+
+    $scope.HidnAlertFilter = function(deleteTarget){
+    deleteId = deleteTarget.id
+        $http.post('/bigbrother_sniper/api/hidn/alert/log/',{"id": deleteId}, {
             headers: {
                 'Authorization' : token
             }
@@ -526,7 +529,7 @@ Bigbrother 디비 삭제 (로그삭제
                 'Authorization' : token
             }
         }).then(function(response){
-            $scope.base64EncodeImg = response.data;
+            $scope.alertInfo = response.data;
             $scope.loadalertlist();
             $("#ViewPicture").css("z-index", "9999");
             $("#ViewPicture").appendTo("body").modal();
@@ -543,8 +546,8 @@ Bigbrother 디비 삭제 (로그삭제
              }
 
 
-    $scope.alertAllDeleteStart = function(){
-        $http.get('/bigbrother_sniper/api/delete/alert/log/all/', {
+    $scope.alertAllHidnStart = function(){
+        $http.get('/bigbrother_sniper/api/hidn/alert/log/all/', {
             headers: {
                 'Authorization' : token
             }
@@ -761,7 +764,109 @@ function chulcheckJS() {
 
 
 
+app.controller('AlertInfoController_list', function($scope, $http){
 
+   $scope.alertInfoListView = function () {
+        $http.get('/bigbrother_sniper/api/alert/list/log/date/',
+        {
+            headers: {
+                'Authorization' : token
+            }
+
+        }).then(function(response){
+            LogDates = response.data;
+            $scope.DateList = [];
+            for ( index in LogDates)
+                {
+                    $scope.DateList.push(LogDates[index]);
+                }
+         },function (response){
+
+         });
+
+
+
+
+    };
+
+
+    $scope.alertInfoListViewClick = function () {
+        $http.post('/bigbrother_sniper/api/alert/list/log/date/view/', {"date": $scope.selectedDate},{
+            headers: {
+                'Authorization' : token
+            }
+        }).then(function(response){
+            alert_list = response.data;
+            $scope.alerts = [];
+            for ( index in alert_list ) {
+                $scope.alerts.push(alert_list[index]);
+            }
+
+        }, function (response){
+        });
+    };
+
+        var deleteId = 0;
+      $scope.clickdelete = function(deleteTarget){
+
+            deleteId = deleteTarget.id;
+            $("#deleteLogCheck").css("z-index", "9999");
+            $("#deleteLogCheck").appendTo("body").modal();
+             }
+
+
+     $scope.deleteAlertFilter = function(){
+        $http.post('/bigbrother_sniper/api/delete/alert/log/',{"id": deleteId}, {
+            headers: {
+                'Authorization' : token
+            }
+        }).then(function(response){
+         $scope.alertInfoListViewClick();
+
+        },function(response){
+
+
+        });
+
+    };
+
+      //알림 전체 삭제
+    $scope.alertAllDelete = function(){
+            $("#deleteLogAllModal").css("z-index", "9999");
+            $("#deleteLogAllModal").appendTo("body").modal();
+             }
+
+
+    $scope.alertAllDeleteStart = function(){
+        $http.get('/bigbrother_sniper/api/delete/alert/log/all/', {
+            headers: {
+                'Authorization' : token
+            }
+        }).then(function(response){
+
+        },function(response){
+
+        });
+
+    };
+
+        var selectTarget = 0;
+    $scope.clickpreview = function(selectTarget){
+    selectId = selectTarget.id
+        $http.post('/bigbrother_sniper/api/bigbrother/post/alert/message/list/preview/',{"id": selectId}, {
+            headers: {
+                'Authorization' : token
+            }
+        }).then(function(response){
+            $scope.alertInfo = response.data;
+            $("#ViewPictureLog").css("z-index", "9999");
+            $("#ViewPictureLog").appendTo("body").modal();
+        },function(response){
+
+        });
+
+    };
+});
 
 
 

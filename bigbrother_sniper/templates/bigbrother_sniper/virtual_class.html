@@ -38,12 +38,12 @@ function loadDataView(){
 <nav class="navbar navbar-inverse">
   <div class="container-fluid">
     <div class="navbar-header">
-      <a class="navbar-brand" href="JavaScript:window.location.reload()">Big Brothe Sniper</a>
+      <a class="navbar-brand" href="JavaScript:window.location.reload()">Big Brother Sniper</a>
     </div>
     <ul class="nav navbar-nav">
-      <li onclick="activeMyInfo()" class="active"><a data-toggle="tab" href="#myinfo" id="chul1">알림판</a></li>
+      <li onclick="activeMyInfo()" class="active"><a data-toggle="tab" href="#alertInfo" id="chul1">알림판</a></li>
       <li onclick="activeChulCheck()"><a data-toggle="tab" href="#bigbrother_sniper" id="chul2">규칙 설정</a></li>
-      <li onclick="activeChulCheckList()"><a data-toggle="tab" href="#bigbrother_sniper" id="chul3"></a></li>
+      <li onclick="activeChulCheckList()"><a data-toggle="tab" href="#alertInfo_log_list" id="chul3">알림 로그 기록</a></li>
     </ul>
       <ul class="navbar-form navbar-right" ng-controller="LogoutController">
           <input name="logout" class="btn btn-danger" tabindex="4" value="종료" ng-click="doLogout()" onclick="void()">
@@ -73,7 +73,7 @@ function loadDataView(){
 </nav>
 
 <div class="tab-content bigbrother-content container">
-	<div id="myinfo" class="tab-pane fade in active" >
+	<div id="alertInfo" class="tab-pane fade in active" >
 
         <div class="panel panel-default" ng-controller="BigbrotherController" ng-init="loadalertlist();startInterval()">
   			<div class="panel-heading">알림</div>
@@ -102,15 +102,24 @@ function loadDataView(){
                         <div class="col-md-7">
                         </div>
                         <div class="col-md-2">
-                            <input type="button" id ="subject_submit" class="btn btn-primary" style="width:100%;margin-bottom:10px" value="전체 삭제" ng-click="alertAllDelete()">
+                            <input type="button" id ="subject_submit" class="btn btn-primary" style="width:100%;margin-bottom:10px" value="전체 삭제" ng-click="alertAllHidnStart();loadAlertList()">
                         </div>
 
                     </div>
                     {% verbatim %}
                     <div class="well" ng-repeat="alert in alerts">
-                        [{{alert.drop_on_flag}}] [이름 : {{alert.username}}]          [키워드 : {{alert.keyword}}]    [기록 시간 :{{alert.recordTime}}]
-                        <button id="{{alert.id+0}}" type="button" class="btn btn-default" style="float: right;height:40px;margin-top:-9px;" ng-click="clickdelete($event.target)">삭제</button>
-                        <button id="{{alert.id}}" type="button" class="btn btn-success" style="float: right;height:40px;margin-top:-9px;" ng-click="clickpreview($event.target)">사진보기</button>
+                        <table>
+                            <tr><th>[{{alert.drop_on_flag}}]</th><th>[이름 : {{alert.username}}] </th><th>[키워드 : {{alert.keyword}}]</th><th> [기록 시간 :{{alert.recordTime}}]</th>
+
+                                    <button id="{{alert.id+0}}" type="button" class="btn btn-default" style="float: right;height:40px;margin-top:-9px;" ng-click="HidnAlertFilter($event.target);loadAlertList()">삭제</button>
+
+
+                                    <button id="{{alert.id}}" type="button" class="btn btn-success" style="float: right;height:40px;margin-top:-9px;" ng-click="clickpreview($event.target)">사진보기</button>
+
+
+                            </tr>
+                        </table>
+
 
                         <div class="modal fade" id="deleteCheck" role="dialog">
                             <div class="modal-dialog" >
@@ -151,20 +160,20 @@ function loadDataView(){
             </div>
 
                 <div class="modal fade" id="ViewPicture" role="dialog">
-                    <div class="modal-dialog" >
+                    <div class="modal-dialog modal-lg" >
                         <!-- Modal content-->
                         <div class="modal-content">
                             <div class="modal-header">
                                 <button type="button" class="close" data-dismiss="modal">&times;</button>
-                                <h4 class="modal-title">test</h4>
+                                <h4 class="modal-title">{{alertInfo.keyword}}</h4>
                             </div>
                             <div class="modal-body">
-                                <img src='data:image/jpeg;base64,{{base64EncodeImg}}'  />
-                                <p>testtest</p>
+                                <img src='data:image/jpeg;base64,{{alertInfo.pictureBase64}}'  />
+                                <p>{{alertInfo.explain}}</p>
                             </div>
                             <div class="modal-footer">
-                                <button type="submit" class="btn btn-default" data-dismiss="modal">Close</button>
-                                <button type="button" class="btn btn-danger" data-dismiss="modal" ng-click="deleteAlertFilter()">Delete</button>
+                                <button type="submit" class="btn btn-default" data-dismiss="modal">닫기</button>
+                                <button type="button" class="btn btn-success" data-dismiss="modal" ng-click="deleteAlertFilter()">확인</button>
                             </div>
                         </div>
                     </div>
@@ -280,6 +289,102 @@ function loadDataView(){
 </div>
 
 
+        </div>
+    </div>
+    <!-- 알림 기록 -->
+    <div id="alertInfo_log_list" class="tab-pane fade" ng-controller="AlertInfoController_list" ng-init="alertInfoListView()">
+        <div class="panel panel-default">
+            <div class="panel-heading">알림 기록 창</div>
+            <div class="panel-body">
+                <div class="form-group">
+                    <select ng-model="selectedDate" style="width:100%;" ng-change="alertInfoListViewClick()">
+                        <option ng-selected="selected" value="0">날짜를 선택해 주십시오</option>
+                        {% verbatim %}
+                        <option ng-repeat="Date in DateList" value="{{Date.date}}">[{{Date.date}}]</option>
+                        {% endverbatim %}
+                        <hr>
+                            <input type="button" id ="all_delete_log" class="btn btn-primary" style="width:100%;margin-bottom:10px" value="전체 숨기기" ng-click="alertAllDelete();">
+                    {% verbatim %}
+                    <div class="panel panel-default" ng-repeat="alert in alerts">
+                        <table>
+                            <tr><th>[{{alert.drop_on_flag}}]</th><th>[이름 : {{alert.username}}] </th><th>[키워드 : {{alert.keyword}}]</th><th> [기록 시간 :{{alert.recordTime}}]</th>
+
+                                    <button id="{{alert.id+00}}" type="button" class="btn btn-default" style="float: right;height:40px;margin-top:-9px;" ng-click="clickdelete($event.target)">숨기기</button>
+
+
+                                    <button id="{{alert.id+000}}" type="button" class="btn btn-success" style="float: right;height:40px;margin-top:-9px;" ng-click="clickpreview($event.target)">사진보기</button>
+
+
+                            </tr>
+                        </table>
+
+
+                        <div class="modal fade" id="deleteLogCheck" role="dialog">
+                            <div class="modal-dialog" >
+                              <!-- Modal content-->
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                        <h4 class="modal-title">경고</h4>
+                                    </div>
+                                <div class="modal-body">
+                                <p>정말 삭제 하시겠습니까?</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="submit" class="btn btn-default" data-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-danger" data-dismiss="modal" ng-click="deleteAlertFilter();alertInfoListViewClick();">Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal fade" id="deleteLogAllModal" role="dialog">
+                        <div class="modal-dialog" >
+                            <!-- Modal content-->
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                    <h4 class="modal-title">경고</h4>
+                                </div>
+                            <div class="modal-body">
+                                <p>정말 모든 알림기록을 삭제 하시겠습니까?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-default" data-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-danger" data-dismiss="modal" ng-click="alertAllDeleteStart();alertInfoListViewClick();">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+                <div class="modal fade" id="ViewPictureLog" role="dialog">
+                    <div class="modal-dialog modal-lg"  >
+                        <!-- Modal content-->
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                <h4 class="modal-title">{{alertInfo.keyword}}</h4>
+                            </div>
+                            <div class="modal-body">
+                                <img src='data:image/jpeg;base64,{{alertInfo.pictureBase64}}'/>
+                                <p>{{alertInfo.explain}}</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-default" data-dismiss="modal">닫기</button>
+                                <button type="button" class="btn btn-success" data-dismiss="modal" ng-click="deleteAlertFilter()">확인</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <p style="float:right">총 {{alerts.length}}개의 기록이 있음</p>
+                    {% endverbatim %}
+                        </select>
+
+
+                </div>
+            </div>
         </div>
     </div>
 </div>

@@ -53,6 +53,9 @@ class LabelGuardList(models.Model):
     drop_on_flag = models.BooleanField(default=False)
     explain = models.CharField(max_length=32, default='', null=True)
 
+class DateRecord(models.Model):
+    date = models.CharField(max_length=11, unique=True)
+
 class PostAlertMessageLog(models.Model):
     username = models.CharField(max_length=6, default='')
     drop_on_flag = models.BooleanField(default=False)
@@ -61,7 +64,10 @@ class PostAlertMessageLog(models.Model):
     recordTime = models.DateTimeField(editable=True, null=True)
     user = models.ForeignKey(User, default='')
     cause = models.CharField(max_length=300, default='')
+    date = models.ForeignKey(DateRecord, default='', null=True)
+    alertView = models.BooleanField(default=True)
 
 class GuardOrUtilImageSavezone(models.Model):
     pictureBase64 = models.CharField(max_length=1024000, default='')
     pictureName = models.CharField(max_length=64, default='')
+
