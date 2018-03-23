@@ -61,7 +61,7 @@ def loginView(request):
 
 def virtualClassView(request):
 
-    return render(request, 'bigbrother_sniper/virtual_class.html')
+    return render(request, 'bigbrother_sniper/alert_page.html')
 
 class RegistrationView(APIView):
     permission_classes = (AllowAny,)

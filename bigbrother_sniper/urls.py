@@ -58,7 +58,7 @@ urlpatterns = [
     url(r'^main/$', mainView, name='main'),
     url(r'^login/$', loginView, name='login'),
     # url(r'^main/$', login_view, name='main'),
-    url(r'^virtual_class/$', virtualClassView, name='virtual_class'),
+    url(r'^alert_page/$', virtualClassView, name='alert_page'),
     url(r'^$', RedirectView.as_view(url='bigbrother_sniper/main/')),
 
 
