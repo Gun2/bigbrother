@@ -102,7 +102,7 @@ function loadDataView(){
                         <div class="col-md-7">
                         </div>
                         <div class="col-md-2">
-                            <input type="button" id ="subject_submit" class="btn btn-primary" style="width:100%;margin-bottom:10px" value="전체 삭제" ng-click="alertAllHidnStart();loadAlertList()">
+                            <input type="button" id ="subject_submit" class="btn btn-primary" style="width:100%;margin-bottom:10px" value="전체 숨기기" ng-click="alertAllHidnStart();loadAlertList()">
                         </div>
 
                     </div>
@@ -111,7 +111,7 @@ function loadDataView(){
                         <table>
                             <tr><th>[{{alert.drop_on_flag}}]</th><th>[이름 : {{alert.username}}] </th><th>[키워드 : {{alert.keyword}}]</th><th> [기록 시간 :{{alert.recordTime}}]</th>
 
-                                    <button id="{{alert.id+0}}" type="button" class="btn btn-default" style="float: right;height:40px;margin-top:-9px;" ng-click="HidnAlertFilter($event.target);loadAlertList()">삭제</button>
+                                    <button id="{{alert.id+0}}" type="button" class="btn btn-default" style="float: right;height:40px;margin-top:-9px;" ng-click="HidnAlertFilter($event.target);loadAlertList()">숨기기</button>
 
 
                                     <button id="{{alert.id}}" type="button" class="btn btn-success" style="float: right;height:40px;margin-top:-9px;" ng-click="clickpreview($event.target)">사진보기</button>
@@ -303,13 +303,13 @@ function loadDataView(){
                         <option ng-repeat="Date in DateList" value="{{Date.date}}">[{{Date.date}}]</option>
                         {% endverbatim %}
                         <hr>
-                            <input type="button" id ="all_delete_log" class="btn btn-primary" style="width:100%;margin-bottom:10px" value="전체 숨기기" ng-click="alertAllDelete();">
+                            <input type="button" id ="all_delete_log" class="btn btn-primary" style="width:100%;margin-bottom:10px" value="전체 삭재" ng-click="alertAllDelete();">
                     {% verbatim %}
                     <div class="panel panel-default" ng-repeat="alert in alerts">
                         <table>
                             <tr><th>[{{alert.drop_on_flag}}]</th><th>[이름 : {{alert.username}}] </th><th>[키워드 : {{alert.keyword}}]</th><th> [기록 시간 :{{alert.recordTime}}]</th>
 
-                                    <button id="{{alert.id+00}}" type="button" class="btn btn-default" style="float: right;height:40px;margin-top:-9px;" ng-click="clickdelete($event.target)">숨기기</button>
+                                    <button id="{{alert.id+00}}" type="button" class="btn btn-default" style="float: right;height:40px;margin-top:-9px;" ng-click="clickdelete($event.target)">삭제</button>
 
 
                                     <button id="{{alert.id+000}}" type="button" class="btn btn-success" style="float: right;height:40px;margin-top:-9px;" ng-click="clickpreview($event.target)">사진보기</button>
