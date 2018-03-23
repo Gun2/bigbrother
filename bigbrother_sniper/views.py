@@ -279,7 +279,7 @@ class PostAlertMessage(APIView):
                 for index in LabelFilter:
 
                     if "["+index.label_value+"]" in serializer.validated_data['keyword'] :
-                        explainLabel+=" "+index.explain.encode('utf-8')
+                        explainLabel+=" "+index.explain
                 if explainLabel == "사물 : ":
                     explainLabel =""
                 else:
@@ -290,7 +290,7 @@ class PostAlertMessage(APIView):
                 TextFilter = TextGuardList.objects.all()
                 for index in TextFilter:
                     if "["+index.text_value+"]" in serializer.validated_data['keyword'] :
-                        explainText += " " + index.explain.encode('utf-8')
+                        explainText += " " + index.explain
 
                 if explainText == "텍스트 : ":
                     explainText =""
