@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
-from .models import ProfessorProfile, StudentProfile
+from .models import AdminProfile, EmployeeProfile
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -26,19 +26,17 @@ class RegistrationSerializer(serializers.Serializer):
     email = serializers.EmailField()
     is_staff = serializers.BooleanField(default=False)
     id = serializers.IntegerField()
-    department = serializers.IntegerField()
-    profile_image_id = serializers.IntegerField()
 
-class ProfessorProfileSerializer(serializers.ModelSerializer):
+class AdminProfileSerializer(serializers.ModelSerializer):
     class Meta:
-        model = ProfessorProfile
-        fields = ('user', 'employee_id', 'department')
+        model = AdminProfile
+        fields = ('user', 'admin_id')
 
 
-class StudentProfileSerializer(serializers.ModelSerializer):
+class EmployeeProfileSerializer(serializers.ModelSerializer):
     class Meta:
-        model = StudentProfile
-        fields = ('user', 'student_id', 'department', 'Bigbrothers')
+        model = EmployeeProfile
+        fields = ('user', 'employee_id', 'Bigbrothers')
 
 
 class IdCheckSerializer(serializers.Serializer):
