@@ -297,13 +297,13 @@ function loadDataView(){
             <div class="panel-heading">알림 기록 창</div>
             <div class="panel-body">
                 <div class="form-group">
-                    <select ng-model="selectedDate" style="width:100%;" ng-change="alertInfoListViewClick()">
+                    <select ng-model="selectedDate" style="width:100%;" ng-change="alertInfoListViewClick()" ng-mouseover="alertInfoListView()">
                         <option ng-selected="selected" value="0">날짜를 선택해 주십시오</option>
                         {% verbatim %}
                         <option ng-repeat="Date in DateList" value="{{Date.date}}">[{{Date.date}}]</option>
                         {% endverbatim %}
                         <hr>
-                            <input type="button" id ="all_delete_log" class="btn btn-primary" style="width:100%;margin-bottom:10px" value="전체 삭재" ng-click="alertAllDelete();">
+                            <input type="button" id ="all_delete_log" class="btn btn-primary" style="width:100%;margin-bottom:10px" value="전체 삭제" ng-click="alertAllDelete();">
                     {% verbatim %}
                     <div class="panel panel-default" ng-repeat="alert in alerts">
                         <table>

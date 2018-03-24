@@ -174,32 +174,6 @@ app.controller('RegisterController',['$scope', '$http', 'Upload', function ($sco
 
 
 
-    $scope.doCheckIdNumber = function (){
-
-        var userAuthNumData = {
-            "organization_id": $scope.organization_id
-        };
-
-        $http.post("/bigbrother_sniper/api/user_register/id/NumberCheck/", userAuthNumData)
-        .then(function(response){
-
-            if(response.data.result == '1'){
-                if(id_flag == true){
-                        id_flag = false;
-                        $('[data-toggle="popover1"]').popover({placement: 'top', content: "중복된 학번/사번 입니다."}).popover("show");
-                }
-            }
-            else{
-                if(id_flag == false){
-                    $('[data-toggle="popover1"]').popover('hide');
-                    id_flag = true;
-                 }
-            }
-        }, function (response){
-
-        });
-
-     };
 
     $http.get("/bigbrother_sniper/api/department/list/")
     .then(function (response) {
@@ -211,230 +185,8 @@ app.controller('RegisterController',['$scope', '$http', 'Upload', function ($sco
 
     })
 
-    $scope.doRegister = function () {
-
-        var regist_form = {
-            "first_name" : $scope.reg_firstname,
-            "last_name" : $scope.reg_lastname,
-            "username" : $scope.reg_username,
-            "email" : $scope.email,
-            "password" : $scope.reg_password,
-            "confirm-password" : $scope.reg_password_confirm,
-            "is_staff" : $scope.user_type,
-            "id" : $scope.organization_id,
-            "department" : $scope.selectedDepartment,
-            "profile_image_id" : $scope.image_id,
-        };
-
-        if($scope.reg_firstname ==""){
-            $scope.reg_firstname = null;
-            }
-
-        if($scope.reg_lastname ==""){
-            $scope.reg_lastname = null;
-            }
-
-        if($scope.reg_username ==""){
-            $scope.reg_username = null;
-            }
-        if($scope.email == ""){
-            $scope.email = null;
-            }
-        if($scope.reg_password == ""){
-            $scope.reg_password = null;
-            }
-        if($scope.reg_password_confirm == ""){
-            $scope.reg_password_confirm = null;
-            }
-        if($scope.organization_id == ""){
-            $scope.organization_id = null;
-            }
-
-       if($scope.reg_username !=null && $scope.email != null && $scope.reg_firstname != null&& $scope.reg_lastname !=null && $scope.reg_password != null && $scope.reg_password_confirm != null && $scope.organization_id !=null && $scope.selectedDepartment != '0' ){
-            if($scope.reg_password == $scope.reg_password_confirm){
-                if($scope.profile_image  != null){
-                   $http.put("/bigbrother_sniper/api/user_register/", regist_form)
-                     .then(function(response){
-                      $scope.reg_firstname = '';
-                      $scope.reg_lastname = '';
-                      $scope.reg_username = '';
-                      $scope.email = '';
-                      $scope.reg_password = '';
-                      $scope.reg_password_confirm = '';
-                      $scope.user_type = 'true';
-                      $scope.organization_id = '';
-                      $scope.selectedDepartment = '0';
-
-                      $('#registration-complete-modal').css("z-index", "99999");
-                      $('#registration-complete-modal').appendTo("body").modal();
-
-                   },  function(response) {
-
-                         });
-                 }
-                 else{
-                        var subject_error='';
-                        var hole_error ="사진을 첨부해주세요.";
-                        $('#sub_error_code').html(subject_error);
-                        $('#error_code').html(hole_error);
-                        $("#error_dialog").appendTo('body').modal();
-                  }
-            }
-            else {
-                   var hole_error ="비밀번호 확인이 일치하지 않습니다.";
-                    $('#error_code').html(hole_error);
-                    $("#error_dialog").appendTo('body').modal();
-
-            }
-       } else {
-            var hole_error= "";
-            var subject_error="";
-            var count = 0;
-
-            if( $scope.reg_firstname == null ||
-                $scope.reg_lastname == null ||
-                $scope.reg_username == null ||
-                $scope.email == null ||
-                $scope.reg_password == null ||
-                $scope.reg_password_confirm == null ||
-                 $scope.organization_id == null) {
-
-                if($scope.reg_lastname ==null){
-                    hole_error +="성";
-                    count=1;
-                    }
-
-                 if($scope.reg_firstname==null){
-                    if(count==1){
-                       hole_error +=",";
-                       }
-                    else{
-                        count =1;
-                        }
-                    hole_error +="이름";
-                 }
-
-                if($scope.reg_username ==null){
-                    if(count ==1){
-                       hole_error +=",";
-                       }
-                     else{
-                        count =1;
-                        }
-                    hole_error +="아이디";
-                  }
-
-                if($scope.email == null){
-                  if(count ==1){
-                    hole_error +=",";
-                  } else {
-                    count=1;
-                  }
-                  hole_error +="메일";
-                }
-                if($scope.reg_password == null){
-                    if(count ==1){
-                        hole_error +=",";
-                    } else {
-                        count=1;
-                    }
-                    hole_error +="비밀번호";
-                }
-                if($scope.reg_password_confirm == null){
-                    if(count ==1){
-                        hole_error +=",";
-                    } else {
-                        count=1;
-                    }
-                    hole_error += "비밀번호 확인"
-                }
-                if($scope.organization_id == null){
-                    if(count ==1){
-                        hole_error +=",";
-                    } else {
-                        count=1;
-                    }
-                    hole_error += "학번"
-                }
-                hole_error +="의 값이 올바르지 않습니다. ";
-            }
-
-            if($scope.selectedDepartment == '0'){
-                subject_error += "학과를 선택하십시오.";
-            }
-
-
-            $('#error_code').html(hole_error);
-            $("#sub_error_code").html(subject_error);
-            $("#error_dialog").appendTo('body').modal();
-
-        }
-    };
-
-    $scope.submitImage = function () {
-      if ( $scope.profile_image) {
-        $scope.upload($scope.profile_image);
-      }
-    };
-
-
-
-
-    $('#upload_progress_container').css({'display':'none'});
-
-    $scope.upload = function( file ) {
-        $('#upload_progress_container').css({'display':'block'});
-        Upload.upload({
-            url: '/bigbrother_sniper/api/profile/image/upload/',
-            data: {'file': file}
-        }).then(function (resp) {
-            $('#uploaded_image').attr('src', resp.data.uploaded_url);
-            $('#image_confirm').collapse();
-            $scope.image_id = resp.data.image_id;
-        }, function (resp) {
-
-        }, function (evt) {
-            var progressPercentage = parseInt(100.0 * evt.loaded / evt.total);
-            $("#upload_progress").css({'width':progressPercentage + '%'});
-            $("#upload_progress").html(progressPercentage + '%');
-
-            if ( progressPercentage >= 100) {
-                setTimeout(function(){
-                    $('#upload_progress_container').css({'display':'none'});
-                }, 700);
-
-            }
-        });
-
-    };
 }]);
 
-app.controller('ProfileController', function($scope, $http){
-
-
-    $scope.loadProfile = function () {
-        $http.get('/bigbrother_sniper/api/profile', {
-            headers: {
-                'Authorization' : token
-            }
-        }).then(function(response){
-            $scope.lastname =response.data.last_name;
-            $scope.firstname = response.data.first_name;
-            $scope.username = response.data.username;
-            $scope.department = response.data.department;
-            $scope.id = response.data.id;
-            $scope.email = response.data.email;
-            $scope.user_type = response.data.user_type;
-            $scope.profile_image = response.data.profile_image;
-            $scope.time_set = response.data.time_set;
-
-        }, function (response){
-
-        });
-    };
-
-
-});
 
 app.controller('BigbrotherController', function($scope, $http, $interval){
 
@@ -789,8 +541,9 @@ app.controller('AlertInfoController_list', function($scope, $http){
 
     };
 
-
+    var selectedDate;
     $scope.alertInfoListViewClick = function () {
+    selectedDate = $scope.selectedDate;
         $http.post('/bigbrother_sniper/api/alert/list/log/date/view/', {"date": $scope.selectedDate},{
             headers: {
                 'Authorization' : token
@@ -838,7 +591,7 @@ app.controller('AlertInfoController_list', function($scope, $http){
 
 
     $scope.alertAllDeleteStart = function(){
-        $http.get('/bigbrother_sniper/api/delete/alert/log/all/', {
+        $http.post('/bigbrother_sniper/api/delete/alert/log/all/', {"date":selectedDate},{
             headers: {
                 'Authorization' : token
             }

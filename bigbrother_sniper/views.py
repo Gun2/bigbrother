@@ -274,7 +274,7 @@ class PostAlertMessage(APIView):
 
                 #사진 설명 넣기
                 explainLabel = "사물 : "
-
+                # .encode("utf-8")
                 LabelFilter = LabelGuardList.objects.all()
                 for index in LabelFilter:
 
@@ -565,11 +565,15 @@ class DeleteAlertLogAll(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (JSONWebTokenAuthentication,)
 
-    def get(self, request):
+    def post(self, request):
 
         if request.user.is_staff:
-            alertDelete = PostAlertMessageLog.objects.all()
-            alertDelete.delete()
+            serializer = DateListenerSerializer(data=request.data)
+            if serializer.is_valid():
+                DateResult = DateRecord.objects.get(date = serializer.validated_data['date'])
+                alertDeleteList = PostAlertMessageLog.objects.filter(date = DateResult)
+                for alertDelete in alertDeleteList:
+                    alertDelete.delete()
 
             return Response("success All Delete", status=status.HTTP_200_OK)
 
@@ -604,7 +608,7 @@ class LoadAlertList(APIView):
                     "drop_on_flag" :tmpFlag
                 })
             return Response(listAlerts)
-
+        # .decode('utf-8')
         else:
 
             return Response("Error.", status=status.HTTP_403_FORBIDDEN)
@@ -693,7 +697,8 @@ class AlertLogDateSearchView(APIView):
                         "id": SearchAlertList.pk,
                         "keyword": SearchAlertList.keyword,
                         "recordTime": SearchAlertList.recordTime,
-                        "drop_on_flag": tmpFlag
+                        "drop_on_flag": tmpFlag,
+                        "username" : SearchAlertList.username
                     })
                 return Response(results)
         else:
