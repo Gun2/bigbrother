@@ -12,8 +12,8 @@ from bigbrother_sniper.serializers import ( RegistrationSerializer,
                                            IdNumberCheckSerializer,
                                            IdCheckSerializer,
                                            InfoCheckSerializer,
-                                           ProfessorProfileSerializer,
-                                           StudentProfileSerializer,
+                                           AdminProfileSerializer,
+                                           EmployeeProfileSerializer,
                                            DeleteAlertSerializer,
                                            IdRequestSerializer,
                                            PostAlertMessageLogtSerializer,
@@ -23,10 +23,8 @@ from bigbrother_sniper.serializers import ( RegistrationSerializer,
 
 
 from django.utils import timezone
-from .models import ( ProfessorProfile,
-                      Department,
-                      StudentProfile,
-                      ProfileImage,
+from .models import ( AdminProfile,
+                      EmployeeProfile,
                       TextGuardList,
                       LabelGuardList,
                       PostAlertMessageLog,
@@ -82,29 +80,22 @@ class RegistrationView(APIView):
             )
             newUser.save()
             if serializer.validated_data['is_staff']:
-                newProf = ProfessorProfile.objects.create(
+                newProf = AdminProfile.objects.create(
                     user=newUser,
-                    employee_id=serializer.validated_data['id'],
-                    department=Department.objects.get(pk=serializer.validated_data['department']),
+                    admin_id=serializer.validated_data['id'],
                 )
                 newProf.save()
 
-                profile_img = ProfileImage.objects.get(pk=serializer.validated_data['profile_image_id'])
-                profile_img.user = newUser
-                profile_img.save()
+
 
 
             else :
-                newStudentProfile = StudentProfile.objects.create(
+                newEmployeeProfile = EmployeeProfile.objects.create(
                     user=newUser,
-                    student_id=serializer.validated_data['id'],
-                    department=Department.objects.get(pk=serializer.validated_data['department']),
+                    employee_id=serializer.validated_data['id'],
                 )
-                newStudentProfile.save()
+                newEmployeeProfile.save()
 
-                profile_img = ProfileImage.objects.get(pk=serializer.validated_data['profile_image_id'])
-                profile_img.user = newUser
-                profile_img.save()
 
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -142,15 +133,15 @@ class IdNumberCheckView(APIView):
 
         if serializer.is_valid():
             organization_id = serializer.validated_data['organization_id']
-            employee_user = ProfessorProfile.objects.filter(employee_id=organization_id)
-            student_user = StudentProfile.objects.filter(student_id=organization_id)
+            admin_user = AdminProfile.objects.filter(admin_id=organization_id)
+            employee_user = EmployeeProfile.objects.filter(employee_id=organization_id)
 
-            if employee_user.exists():
+            if admin_user.exists():
                 result = {
                     "result": 1
                 }
                 return Response(result)
-            if student_user.exists():
+            if employee_user.exists():
                 result = {
                     "result": 1
                 }
@@ -192,14 +183,14 @@ class InfoCheckView(APIView):
 
 
 
-class StudentView(APIView):
+class EmployeeView(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (JSONWebTokenAuthentication,)
 
     def post(self, request):
-        std = StudentProfile.objects.get(user=request.user)
+        std = EmployeeProfile.objects.get(user=request.user)
 
-        return Response({"StudentPK": std.pk})
+        return Response({"EmployeePK": std.pk})
 
 class TextGuardListPost(APIView):
     permission_classes = (IsAuthenticated,)
@@ -279,7 +270,7 @@ class PostAlertMessage(APIView):
                 for index in LabelFilter:
 
                     if "["+index.label_value+"]" in serializer.validated_data['keyword'] :
-                        explainLabel+=" "+index.explain
+                        explainLabel+=" "+index.explain#.encode('utf-8')
                 if explainLabel == "사물 : ":
                     explainLabel =""
                 else:
@@ -290,7 +281,7 @@ class PostAlertMessage(APIView):
                 TextFilter = TextGuardList.objects.all()
                 for index in TextFilter:
                     if "["+index.text_value+"]" in serializer.validated_data['keyword'] :
-                        explainText += " " + index.explain
+                        explainText += " " + index.explain#.encode('utf-8')
 
                 if explainText == "텍스트 : ":
                     explainText =""
@@ -605,7 +596,7 @@ class LoadAlertList(APIView):
                     "id": AlertList.pk,
                     "keyword": AlertList.keyword,
                     "recordTime": AlertList.recordTime,
-                    "drop_on_flag" :tmpFlag
+                    "drop_on_flag" :tmpFlag#.decode('utf-8')
                 })
             return Response(listAlerts)
         # .decode('utf-8')
@@ -697,7 +688,7 @@ class AlertLogDateSearchView(APIView):
                         "id": SearchAlertList.pk,
                         "keyword": SearchAlertList.keyword,
                         "recordTime": SearchAlertList.recordTime,
-                        "drop_on_flag": tmpFlag,
+                        "drop_on_flag": tmpFlag,#.decode('utf-8'),
                         "username" : SearchAlertList.username
                     })
                 return Response(results)

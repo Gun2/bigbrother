@@ -139,7 +139,7 @@ var login_error;
 
 });
 
-app.controller('RegisterController',['$scope', '$http', 'Upload', function ($scope, $http, Upload){
+app.controller('RegisterController',['$scope', '$http', function ($scope, $http){
 
  var username_flag = false;
   var id_flag= false;
@@ -174,16 +174,6 @@ app.controller('RegisterController',['$scope', '$http', 'Upload', function ($sco
 
 
 
-
-    $http.get("/bigbrother_sniper/api/department/list/")
-    .then(function (response) {
-
-       $scope.departments = response.data.departments;
-       $scope.selectedDepartment = '0';
-
-    }, function (response) {
-
-    })
 
 }]);
 
