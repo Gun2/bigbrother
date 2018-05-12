@@ -67,3 +67,10 @@ class BigbrotherRuleManager(serializers.Serializer):
 
 class DateListenerSerializer(serializers.Serializer):
     date = serializers.CharField(max_length=11)
+
+class RequestFilterWithUuidSerializer(serializers.Serializer):
+    BeaconInfoList = serializers.ListField(
+        child = serializers.ListField(
+            child = serializers.CharField()
+        )
+    )

@@ -458,6 +458,31 @@ app.controller('BigbrotherSniperCheckController', function($scope, $http, $inter
 
 
         };
+/*
+**비콘 목록 불러오기
+*/
+   $scope.beaconListView = function () {
+        $http.get('/bigbrother_sniper/api/beacon/list/view/',
+        {
+            headers: {
+                'Authorization' : token
+            }
+
+        }).then(function(response){
+            Beacons = response.data;
+            $scope.BeaconList = [];
+            for ( index in Beacons)
+                {
+                    $scope.BeaconList.push(Beacons[index]);
+                }
+         },function (response){
+
+         });
+
+
+
+
+    };
 
 });
 

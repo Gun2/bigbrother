@@ -18,7 +18,8 @@ from bigbrother_sniper.serializers import ( RegistrationSerializer,
                                            IdRequestSerializer,
                                            PostAlertMessageLogtSerializer,
                                            BigbrotherRuleManager,
-                                           DateListenerSerializer)
+                                           DateListenerSerializer,
+                                           RequestFilterWithUuidSerializer)
 
 
 
@@ -29,7 +30,8 @@ from .models import ( AdminProfile,
                       LabelGuardList,
                       PostAlertMessageLog,
                       DateRecord,
-                      GuardOrUtilImageSavezone
+                      GuardOrUtilImageSavezone,
+                      BeaconList
 
                       )
 
@@ -210,7 +212,9 @@ class TextGuardListPost(APIView):
                     })
 
             # 결과값
-            return Response(textGuard_infos)
+                return Response(textGuard_infos)
+            return Response("not found text list", status=status.HTTP_403_FORBIDDEN)
+
         else:
             return Response("Unknown User request", status=status.HTTP_403_FORBIDDEN)
 
@@ -233,7 +237,9 @@ class LabelGuardListPost(APIView):
                     })
 
             # 결과값
-            return Response(labelGuard_infos)
+                return Response(labelGuard_infos)
+
+            return Response("not found label list", status=status.HTTP_403_FORBIDDEN)
         else:
             return Response("Unknown User request", status=status.HTTP_403_FORBIDDEN)
 
@@ -270,7 +276,7 @@ class PostAlertMessage(APIView):
                 for index in LabelFilter:
 
                     if "["+index.label_value+"]" in serializer.validated_data['keyword'] :
-                        explainLabel+=" "+index.explain#.encode('utf-8')
+                        explainLabel+=" "+index.explain.encode('utf-8')
                 if explainLabel == "사물 : ":
                     explainLabel =""
                 else:
@@ -281,7 +287,7 @@ class PostAlertMessage(APIView):
                 TextFilter = TextGuardList.objects.all()
                 for index in TextFilter:
                     if "["+index.text_value+"]" in serializer.validated_data['keyword'] :
-                        explainText += " " + index.explain#.encode('utf-8')
+                        explainText += " " + index.explain.encode('utf-8')
 
                 if explainText == "텍스트 : ":
                     explainText =""
@@ -331,14 +337,18 @@ class PostAlertMessageListView(APIView):
             for Alert in AlertLogs:
                 if Alert.drop_on_flag==True:
                     drop_on_flag = "Drop"
+                    color = "rad"
                 else:
                     drop_on_flag = "Alert"
+                    color = "yellow"
+
                 alerts.append({
                     "id": Alert.pk,
                     "username": Alert.username,
                     "drop_on_flag": drop_on_flag,
                     "keyword": Alert.keyword,
-                    "recordTime": Alert.recordTime
+                    "recordTime": Alert.recordTime,
+                    "color": color
                 })
             result = {"alerts": alerts}
             return Response(result)
@@ -596,7 +606,7 @@ class LoadAlertList(APIView):
                     "id": AlertList.pk,
                     "keyword": AlertList.keyword,
                     "recordTime": AlertList.recordTime,
-                    "drop_on_flag" :tmpFlag#.decode('utf-8')
+                    "drop_on_flag" :tmpFlag.decode('utf-8')
                 })
             return Response(listAlerts)
         # .decode('utf-8')
@@ -688,7 +698,7 @@ class AlertLogDateSearchView(APIView):
                         "id": SearchAlertList.pk,
                         "keyword": SearchAlertList.keyword,
                         "recordTime": SearchAlertList.recordTime,
-                        "drop_on_flag": tmpFlag,#.decode('utf-8'),
+                        "drop_on_flag": tmpFlag.decode('utf-8'),
                         "username" : SearchAlertList.username
                     })
                 return Response(results)
@@ -739,3 +749,86 @@ class HidnAlertLogAll(APIView):
 
         else:
             return Response("Error.", status=status.HTTP_403_FORBIDDEN)
+
+
+class TextGuardListPostBeacon(APIView):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (JSONWebTokenAuthentication,)
+
+    def post(self, request):
+        if request.user:
+
+            textGuardList = TextGuardList.objects.all()
+
+            if textGuardList:
+                textGuard_infos = []
+                for list in textGuardList:
+                    textGuard_infos.append({
+                        "text_value": list.text_value,
+                        "drop_on_flag": list.drop_on_flag,
+                    })
+
+            # 결과값
+                return Response(textGuard_infos)
+            return Response("not found text list", status=status.HTTP_403_FORBIDDEN)
+
+        else:
+            return Response("Unknown User request", status=status.HTTP_403_FORBIDDEN)
+
+
+class LabelGuardListPostBeacon(APIView):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (JSONWebTokenAuthentication,)
+
+    def post(self, request):
+        if request.user:
+            serializer = RequestFilterWithUuidSerializer(data=request.data)
+
+            labelGuardList = LabelGuardList.objects.all()
+
+            if serializer.is_valid():
+                list = serializer.validated_data['BeaconInfoList']
+                for aa in list:
+                    print aa
+                print (serializer.validated_data['BeaconInfoList'])
+                if labelGuardList:
+                    labelGuard_infos = []
+                    for list in labelGuardList:
+                        labelGuard_infos.append({
+                            "label_value": list.label_value,
+                            "drop_on_flag": list.drop_on_flag,
+                        })
+
+                # 결과값
+                    return Response(labelGuard_infos)
+
+                return Response("not found label list", status=status.HTTP_403_FORBIDDEN)
+            return Response("request error", status=status.HTTP_403_FORBIDDEN)
+
+        else:
+            return Response("Unknown User request", status=status.HTTP_403_FORBIDDEN)
+
+
+
+#비콘 목록 출력
+
+class BeaconListSearchView(APIView):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (JSONWebTokenAuthentication,)
+
+    def get(self, request):
+        if request.user.is_staff:
+            beaconLists = BeaconList.objects.all()
+
+            results = []
+
+            for beaconList in beaconLists:
+                results.append({
+                    "beacon": beaconList.uuid,
+                })
+
+
+            return Response(results)
+
+        else:
+            return Response("permission error", status=status.HTTP_403_FORBIDDEN)

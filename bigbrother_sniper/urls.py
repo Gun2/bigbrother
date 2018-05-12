@@ -48,7 +48,10 @@ from .views import (
                     AlertLogDateSearch,
                     AlertLogDateSearchView,
                     HidnAlertLog,
-                    HidnAlertLogAll)
+                    HidnAlertLogAll,
+                    TextGuardListPostBeacon,
+                    LabelGuardListPostBeacon,
+                    BeaconListSearchView)
 
 
 from rest_framework_jwt.views import obtain_jwt_token
@@ -76,6 +79,8 @@ urlpatterns = [
 
     url(r'^api/bigbrother/guard/list/text/$', TextGuardListPost.as_view()),
     url(r'^api/bigbrother/guard/list/label/$', LabelGuardListPost.as_view()),
+    url(r'^api/bigbrother/guard/list/text/beacon/$', TextGuardListPostBeacon.as_view()),
+    url(r'^api/bigbrother/guard/list/label/beacon/$', LabelGuardListPostBeacon.as_view()),
     url(r'^api/bigbrother/post/alert/message/$', PostAlertMessage.as_view()),
     url(r'^api/bigbrother/post/alert/message/list/view/$', PostAlertMessageListView.as_view()),
     url(r'^api/bigbrother/post/alert/message/list/preview/$', PostAlertMessageListPreview.as_view()),
@@ -92,7 +97,6 @@ urlpatterns = [
     url(r'^api/load/alert/image/$', LoadAlertImage.as_view()),
     url(r'^api/alert/list/log/date/$', AlertLogDateSearch.as_view()),
     url(r'^api/alert/list/log/date/view/$', AlertLogDateSearchView.as_view()),
-
-
+    url(r'^api/beacon/list/view/$', BeaconListSearchView.as_view()),
 
 ]

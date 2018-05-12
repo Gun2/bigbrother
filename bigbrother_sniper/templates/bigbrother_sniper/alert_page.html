@@ -1,38 +1,5 @@
+<script xmlns="http://www.w3.org/1999/html">
 
-<script>
-
-
-var myDataView;
-var myDataViewList;
-
-function loadDataView(){
-
-    myDataView = new dhtmlXDataView({
-				container:"data_container",
-				type:{
-					template
-					:
-
-					"<div class='panel panel-#PanelStatus#' style='width:130px'>" +
-					    "<div class='panel-heading' style='text-align: center'>#AttendanceCheckStatus#</div>" +
-					    "<div class='panel-body'>" +
-					        "<img src='#ImgSRC#' style='width:100px;height:100px'>" +
-					    "</div>" +
-					    "<div class='panel-footer' style='text-align: center'>"+
-					    "#Name# <br>" +
-					    "<div id='specificControl_#id#' data-toggle='popover' data-popover-content='#specificControl'></div>" +
-					    "#IdNum#" +
-					    "</div>" +
-					"</div>"
-
-
-					,
-					height:280,
-					width:150
-				}
-
-			});
-}
 
 </script>
 <nav class="navbar navbar-inverse">
@@ -261,6 +228,13 @@ function loadDataView(){
                     <h4 class="modal-title" id="settingTitle">인식 필터값 설정 <i class="fa fa-question-circle-o" data-toggle="explainIcon2" data-trigger="hover" title="인식 필터값 설정이란" data-html="true" data-content="필터:걸러 낼 값<br>explain:설명(주석)<br>옵션1)텍스트인식과 사물인식<br>옵션2)alert(알림), drop(삭제) " data-placement="right"></i> </h4>
                 </div>
                 <div class="modal-body">
+                    <select ng-model="selectedDate" style="width:100%;" ng-change="" ng-mouseover="beaconListView()">
+                        <option ng-selected="selected" value="0">선택해 주십시오</option>
+                        {% verbatim %}
+                        <option ng-repeat="Beacon in BeaconList" value="{{Beacon.beacon}}">[{{Beacon.beacon}}]</option>
+                        {% endverbatim %}
+                    </select>
+                    <br><br>
                     <div class="form-group">
                                 <input type="text" name="filter" id="filter" data-toggle="popover" data-trigger="focus" tabindex="1" class="form-control"  placeholder="필터 " value="filter" ng-model="createRuleMaker.filter">
                      </div>

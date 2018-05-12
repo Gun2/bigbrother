@@ -27,13 +27,24 @@ class TextGuardList(models.Model):
     drop_on_flag = models.BooleanField(default=False)
     explain = models.CharField(max_length=32, null=True)
 
+    def __str__(self):
+        return str(self.text_value)
+
+
 class LabelGuardList(models.Model):
     label_value = models.CharField(max_length=32, default='')
     drop_on_flag = models.BooleanField(default=False)
     explain = models.CharField(max_length=32, default='', null=True)
 
+    def __str__(self):
+        return str(self.label_value)
+
+
 class DateRecord(models.Model):
     date = models.CharField(max_length=11, unique=True)
+
+    def __str__(self):
+        return str(self.date)
 
 class PostAlertMessageLog(models.Model):
     username = models.CharField(max_length=6, default='')
@@ -46,7 +57,19 @@ class PostAlertMessageLog(models.Model):
     date = models.ForeignKey(DateRecord, default='', null=True)
     alertView = models.BooleanField(default=True)
 
+    def __str__(self):
+        return str(self.recordTime)
+
 class GuardOrUtilImageSavezone(models.Model):
     pictureBase64 = models.CharField(max_length=1024000, default='')
     pictureName = models.CharField(max_length=64, default='')
 
+    def __str__(self):
+        return str(self.pictureName)
+
+
+class BeaconList(models.Model):
+    uuid = models.UUIDField(primary_key=True)
+
+    def __str__(self):
+        return str(self.uuid)
