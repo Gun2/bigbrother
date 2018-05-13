@@ -64,6 +64,7 @@ class BigbrotherRuleManager(serializers.Serializer):
     drop_on_flag = serializers.IntegerField()
     explain = serializers.CharField(max_length=32)
     val = serializers.IntegerField()
+    pk = serializers.IntegerField()
 
 class DateListenerSerializer(serializers.Serializer):
     date = serializers.CharField(max_length=11)

@@ -2,6 +2,7 @@
 
 
 </script>
+
 <nav class="navbar navbar-inverse">
   <div class="container-fluid">
     <div class="navbar-header">
@@ -76,7 +77,7 @@
                     {% verbatim %}
                     <div class="well" ng-repeat="alert in alerts">
                         <table>
-                            <tr><th>[{{alert.drop_on_flag}}]</th><th>[이름 : {{alert.username}}] </th><th>[키워드 : {{alert.keyword}}]</th><th> [기록 시간 :{{alert.recordTime}}]</th>
+                            <tr><th width=50><element ng-bind-html="flagBgcolorSellect(alert.color, alert.drop_on_flag)"></element></th><th width=100>[이름 : {{alert.username}}] </th><th width=200>  {{alert.keyword}}</th><th align=right> [기록 시간 :{{alert.recordTime}}]</th>
 
                                     <button id="{{alert.id+0}}" type="button" class="btn btn-default" style="float: right;height:40px;margin-top:-9px;" ng-click="HidnAlertFilter($event.target);loadAlertList()">숨기기</button>
 
@@ -153,6 +154,7 @@
     </div>
 
 </div>
+
 <div id="bigbrother_sniper" class="tab-pane fade" ng-controller="BigbrotherSniperCheckController" ng-init="loadFilterListText();loadFilterListLabel();startInterval()">
     <div class="panel panel-default">
         <div class="panel-heading">규칙<i class="fa fa-cog fa-spin" ng-click="modalUp()" style="cursor:pointer;float: right; font-size:24px"></i></div>
@@ -160,7 +162,7 @@
                 <!--text-->
                      {% verbatim %}
                 <div class="well" ng-repeat="textFilter in textFilters">
-                    {{textFilter.drop_on_flag}} 제한 사물명 : {{textFilter.text_value}} 분야 : {{textFilter.explain}}
+                    {{textFilter.drop_on_flag}} 제한 텍스트 : {{textFilter.text_value}} 분야 : {{textFilter.explain}}
                     <button id="{{textFilter.id}}" type="button" class="btn btn-default" style="float: right;height:40px;margin-top:-9px;" ng-click="clickdelete($event.target)">삭제</button>
 
                     <div class="modal fade" id="deleteText" role="dialog">
@@ -187,12 +189,13 @@
 
                 <hr>
 			{% endverbatim %}
-                    <!--label-->
+                    <!--label--><script></script>
                      {% verbatim %}
                 <div class="well" ng-repeat="labelFilter in labelFilters">
-                    {{labelFilter.drop_on_flag}} 제한 텍스트 : {{labelFilter.label_value}} 분야 : {{labelFilter.explain}}
-                    <button id="{{labelFilter.id}}" type="button" class="btn btn-default" style="float: right;height:40px;margin-top:-9px;" ng-click="clickdelete2($event.target)">삭제</button>
-
+                    <table><tr>
+                        <element ng-bind-html="labelFilterTable(labelFilter.drop_on_flag, labelFilter.label_value, labelFilter.explain, labelFilter.location)"></element>
+                        <button id="{{labelFilter.id}}" type="button" class="btn btn-default" style="float: right;height:40px;margin-top:-9px;" ng-click="clickdelete2($event.target)">삭제</button>
+                    </tr></table>
                     <div class="modal fade" id="deleteLabel" role="dialog">
                         <div class="modal-dialog" >
                   <!-- Modal content-->
@@ -228,10 +231,10 @@
                     <h4 class="modal-title" id="settingTitle">인식 필터값 설정 <i class="fa fa-question-circle-o" data-toggle="explainIcon2" data-trigger="hover" title="인식 필터값 설정이란" data-html="true" data-content="필터:걸러 낼 값<br>explain:설명(주석)<br>옵션1)텍스트인식과 사물인식<br>옵션2)alert(알림), drop(삭제) " data-placement="right"></i> </h4>
                 </div>
                 <div class="modal-body">
-                    <select ng-model="selectedDate" style="width:100%;" ng-change="" ng-mouseover="beaconListView()">
+                    <select ng-model="selectedUuid" style="width:100%;" ng-change="uuidListClick();" ng-mouseover="beaconListView()">
                         <option ng-selected="selected" value="0">선택해 주십시오</option>
                         {% verbatim %}
-                        <option ng-repeat="Beacon in BeaconList" value="{{Beacon.beacon}}">[{{Beacon.beacon}}]</option>
+                        <option ng-repeat="Beacon in BeaconList" value="{{Beacon.pk}}">{{Beacon.location}}</option>
                         {% endverbatim %}
                     </select>
                     <br><br>
@@ -255,6 +258,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                     <button type="button" class="btn btn-primary" ng-click="createRuleMaker();startInterval()" data-dismiss="modal">Save</button>
+
                 </div>
             </div>
         </div>
@@ -362,3 +366,56 @@
         </div>
     </div>
 </div>
+
+<!--javascript location-->
+<script>
+    function ruleList(drop_on_flag, text_value, explain){
+    result = drop_on_flag + text_value + explain;
+    return result;
+    }
+
+    function test(){
+    result = alert("test");
+    return result;
+    }
+
+    var ruleList;
+
+function loadruleView(){
+
+    ruleList = new dhtmlXDataView({
+				container:"rule_list_container",
+				type:{
+					template
+					:
+
+                        "#drop_on_flag#"
+                        "<button id='{{labelFilter.id}}' type='button' class='btn btn-default' style='float: right;height:40px;margin-top:-9px;' ng-click='clickdelete2($event.target)'>삭제</button>"
+
+                        "<div class='modal fade' id='deleteLabel' role='dialog'>"
+                            "<div class='modal-dialog' >"
+                      <!-- Modal content-->
+                                "<div class='modal-content'>"
+                                    "<div class='modal-header'>"
+                                        "<button type='button' class='close' data-dismiss='modal'>&times;</button>"
+                                            "<h4 class='modal-title'>경고</h4>"
+                                    "</div>"
+                                    "<div class='modal-body'>"
+                                        "<p>정말 삭제 하시겠습니까?</p>"
+                                    "</div>"
+                                    "<div class='modal-footer'>"
+                                        "<button type='submit' class='btn btn-default' data-dismiss='modal'>Close</button>"
+                                        "<button type='button' class='btn btn-danger' data-dismiss='modal' ng-click='deleteAlertFilterLabel();'>Delete</button>"
+                                    "</div>"
+                                "</div>"
+
+                            "</div>"
+                        "</div>"
+
+				}
+
+			});
+}
+
+
+</script>

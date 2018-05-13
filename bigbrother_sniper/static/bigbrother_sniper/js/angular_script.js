@@ -2,7 +2,7 @@
 //var token = "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InByb2Zlc3NvcjEiLCJvcmlnX2lhdCI6MTUxMDU1NTEwOSwidXNlcl9pZCI6MTcsImVtYWlsIjoicHJvZmVzc29yMUBkanUuYWMua3IiLCJleHAiOjE1MTA2MTUxMDl9.TwFWXxuA7aiqOMHTS0RZZwumS1KDdgmoafJOI69kNZQ";
 var token;
 
-var app = angular.module('BigBrotherApp', ['ngFileUpload']);
+var app = angular.module('BigBrotherApp', ['ngFileUpload','ngSanitize']);
 
 
 app.controller('localStorage', function($scope, $http){
@@ -178,7 +178,7 @@ app.controller('RegisterController',['$scope', '$http', function ($scope, $http)
 }]);
 
 
-app.controller('BigbrotherController', function($scope, $http, $interval){
+app.controller('BigbrotherController', function($scope, $http, $interval, $sce){
 
     $scope.loadAlertList = function () {
         $http.get('/bigbrother_sniper/api/bigbrother/post/alert/message/list/view/', {
@@ -196,6 +196,9 @@ app.controller('BigbrotherController', function($scope, $http, $interval){
         });
     };
 
+    $scope.flagBgcolorSellect = function(color, flag) {
+               return $sce.trustAsHtml("<font style='background-color:"+color+"'>"+flag+"</font>");
+             };
 
     $scope.deletealert = function(){
         $http.post('/bigbrother_sniper/api/bigbrother/delete/',{"id": deleteId}, {
@@ -320,7 +323,7 @@ Bigbrother 디비 삭제 (로그삭제
     };
 });
 
-app.controller('BigbrotherSniperCheckController', function($scope, $http, $interval){
+app.controller('BigbrotherSniperCheckController', function($scope, $http, $interval, $sce){
 
 //Bigbrother 규칙 리스트
  $scope.loadFilterListText = function () {
@@ -426,14 +429,14 @@ app.controller('BigbrotherSniperCheckController', function($scope, $http, $inter
 ***규칙 만들기
 ***/
     $scope.modalUp = function () {
-
+            selectedUuid=-1;
             $("#beaconReachSetting").appendTo('body').modal();
         };
 
     $scope.createRuleMaker = function () {
 
             $("#beaconReachSetting").appendTo('body').modal();
-            $http.post('/api/create/rule/maker/', {"val": $scope.createRuleMaker.val, "drop_on_flag": $scope.createRuleMaker.dropFlag, "filter": $scope.createRuleMaker.filter, "explain": $scope.createRuleMaker.explain},
+            $http.post('/api/create/rule/maker/', {"val": $scope.createRuleMaker.val, "drop_on_flag": $scope.createRuleMaker.dropFlag, "filter": $scope.createRuleMaker.filter, "explain": $scope.createRuleMaker.explain, "pk": $scope.selectedUuid},
             {
                 headers: {
                     'Authorization' : token
@@ -484,6 +487,78 @@ app.controller('BigbrotherSniperCheckController', function($scope, $http, $inter
 
     };
 
+/*
+**규칙 설정 시 비콘 선택 이벤트
+*/
+    var selectedUuid;
+    $scope.uuidListClick = function () {
+    selectedUuid = $scope.selectedUuid;
+/*
+        $http.post('/bigbrother_sniper/api/alert/list/log/date/view/', {"date": $scope.selectedDate},{
+            headers: {
+                'Authorization' : token
+            }
+        }).then(function(response){
+            alert_list = response.data;
+            $scope.alerts = [];
+            for ( index in alert_list ) {
+                $scope.alerts.push(alert_list[index]);
+            }
+
+        }, function (response){
+        });*/
+    };
+
+
+    $scope.labelFilterTable = function(flag, label_value, explain, location) {
+
+        var mLine = "";
+        $scope.linebreak = function(text) {mLine = mLine + text};
+        var color;
+        if (flag=="Drop")
+            color="red";
+            //return $sce.trustAsHtml("<font style='background-color:red'>"+flag+"</font>");
+        else
+            color="yellow";
+
+            //return $sce.trustAsHtml("<font style='background-color:yellow'>"+flag+"</font>");
+
+
+        //$scope.linebreak("<table>");
+                //$scope.linebreak("<tr>");
+                        $scope.linebreak("<th width=50>");
+                            $scope.linebreak("<font style='background-color:"+color+"'>"+flag+"</font>");
+                        $scope.linebreak("</th>");
+                        $scope.linebreak("<th width=200>");
+                               $scope.linebreak("제한 사물명 : "+label_value);
+                        $scope.linebreak("</th>");
+                        $scope.linebreak("<th width=200>");
+                               $scope.linebreak("분야 : "+explain);
+                        $scope.linebreak("</th>");
+                        $scope.linebreak("<th align=right>");
+                               $scope.linebreak("위치 : "+location);
+                        $scope.linebreak("</th>");
+                        //$scope.linebreak("<button id=\"3\" type=\"button\" class=\"btn btn-default\" style=\"float: right;height:40px;margin-top:-9px;\" ng-click=\"$scope.clickdelete2($event.target)\">삭제</button>");
+                //$scope.linebreak("</tr>");
+        //$scope.linebreak("</table>");
+
+
+
+
+        return $sce.trustAsHtml(mLine)
+
+        /*<table>
+                <tr><th width=50><element ng-bind-html="flagBgcolorSellect(alert.color, alert.drop_on_flag)"></element></th><th width=100>[제한 사물명 : {{labelFilter.label_value}}</th><th width=200>분야 : {{labelFilter.explain}}</th><th align=right> [위치 : {{labelFilter.location}}</th>
+
+
+
+                <button id="{{labelFilter.id}}" type="button" class="btn btn-default" style="float: right;height:40px;margin-top:-9px;" ng-click="clickdelete2($event.target)">삭제</button>
+
+
+                </tr>
+        </table>
+        ")*/
+             };
 });
 
 

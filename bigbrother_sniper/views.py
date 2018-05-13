@@ -31,7 +31,7 @@ from .models import ( AdminProfile,
                       PostAlertMessageLog,
                       DateRecord,
                       GuardOrUtilImageSavezone,
-                      BeaconList
+                      LocationList
 
                       )
 
@@ -271,12 +271,11 @@ class PostAlertMessage(APIView):
 
                 #사진 설명 넣기
                 explainLabel = "사물 : "
-                # .encode("utf-8")
                 LabelFilter = LabelGuardList.objects.all()
                 for index in LabelFilter:
 
                     if "["+index.label_value+"]" in serializer.validated_data['keyword'] :
-                        explainLabel+=" "+index.explain.encode('utf-8')
+                        explainLabel+=" "+index.explain
                 if explainLabel == "사물 : ":
                     explainLabel =""
                 else:
@@ -287,7 +286,7 @@ class PostAlertMessage(APIView):
                 TextFilter = TextGuardList.objects.all()
                 for index in TextFilter:
                     if "["+index.text_value+"]" in serializer.validated_data['keyword'] :
-                        explainText += " " + index.explain.encode('utf-8')
+                        explainText += " " + index.explain
 
                 if explainText == "텍스트 : ":
                     explainText =""
@@ -337,7 +336,7 @@ class PostAlertMessageListView(APIView):
             for Alert in AlertLogs:
                 if Alert.drop_on_flag==True:
                     drop_on_flag = "Drop"
-                    color = "rad"
+                    color = "red"
                 else:
                     drop_on_flag = "Alert"
                     color = "yellow"
@@ -406,19 +405,17 @@ class FilterListViewLabel(APIView):
             labelFilters = []
 
             for LabelFilter in LabelFilters:
-
                 if LabelFilter.drop_on_flag==True:
                     drop_on_flag = "Drop"
                 else:
                     drop_on_flag = "Alert"
 
-
                 labelFilters.append({
                     "id": LabelFilter.pk,
                     "label_value": LabelFilter.label_value,
                     "drop_on_flag": drop_on_flag,
-                    "explain": LabelFilter.explain
-
+                    "explain": LabelFilter.explain,
+                    "location": (LabelFilter.uuid).location
                 })
             result = {"labelFilters": labelFilters}
             return Response(result)
@@ -508,6 +505,7 @@ class CreateRuleMaker(APIView):
             serializer = BigbrotherRuleManager(data=request.data)
 
             if serializer.is_valid():
+                beaconUuid = LocationList.objects.get(pk=serializer.validated_data['pk'])
                 if serializer.validated_data['drop_on_flag'] == 1:
                     tmpFlag = 'True'
                 else:
@@ -524,7 +522,8 @@ class CreateRuleMaker(APIView):
                     label = LabelGuardList.objects.create(
                         label_value=serializer.validated_data['filter'],
                         drop_on_flag=tmpFlag,
-                        explain=serializer.validated_data['explain']
+                        explain=serializer.validated_data['explain'],
+                        uuid=beaconUuid
                     )
                     label.save()
 
@@ -606,10 +605,9 @@ class LoadAlertList(APIView):
                     "id": AlertList.pk,
                     "keyword": AlertList.keyword,
                     "recordTime": AlertList.recordTime,
-                    "drop_on_flag" :tmpFlag.decode('utf-8')
+                    "drop_on_flag" :tmpFlag
                 })
             return Response(listAlerts)
-        # .decode('utf-8')
         else:
 
             return Response("Error.", status=status.HTTP_403_FORBIDDEN)
@@ -698,7 +696,7 @@ class AlertLogDateSearchView(APIView):
                         "id": SearchAlertList.pk,
                         "keyword": SearchAlertList.keyword,
                         "recordTime": SearchAlertList.recordTime,
-                        "drop_on_flag": tmpFlag.decode('utf-8'),
+                        "drop_on_flag": tmpFlag,
                         "username" : SearchAlertList.username
                     })
                 return Response(results)
@@ -789,7 +787,7 @@ class LabelGuardListPostBeacon(APIView):
             if serializer.is_valid():
                 list = serializer.validated_data['BeaconInfoList']
                 for aa in list:
-                    print aa
+                    print ('aa')
                 print (serializer.validated_data['BeaconInfoList'])
                 if labelGuardList:
                     labelGuard_infos = []
@@ -818,13 +816,16 @@ class BeaconListSearchView(APIView):
 
     def get(self, request):
         if request.user.is_staff:
-            beaconLists = BeaconList.objects.all()
+            beaconLists = LocationList.objects.all()
 
             results = []
 
             for beaconList in beaconLists:
+
                 results.append({
-                    "beacon": beaconList.uuid,
+                    "pk": beaconList.pk,
+                    "location": beaconList.location,
+
                 })
 
 

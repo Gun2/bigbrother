@@ -7,7 +7,7 @@ from bigbrother_sniper.models import (
                                      PostAlertMessageLog,
                                      GuardOrUtilImageSavezone,
                                      DateRecord,
-                                     BeaconList
+                                     LocationList
 
                                      )
 
@@ -20,4 +20,5 @@ admin.site.register(LabelGuardList)
 admin.site.register(PostAlertMessageLog)
 admin.site.register(GuardOrUtilImageSavezone)
 admin.site.register(DateRecord)
-admin.site.register(BeaconList)
+admin.site.register(LocationList)
+
