@@ -429,14 +429,14 @@ app.controller('BigbrotherSniperCheckController', function($scope, $http, $inter
 ***규칙 만들기
 ***/
     $scope.modalUp = function () {
-            selectedUuid=-1;
+            //selectedUuid=-1;
             $("#beaconReachSetting").appendTo('body').modal();
         };
 
     $scope.createRuleMaker = function () {
 
             $("#beaconReachSetting").appendTo('body').modal();
-            $http.post('/api/create/rule/maker/', {"val": $scope.createRuleMaker.val, "drop_on_flag": $scope.createRuleMaker.dropFlag, "filter": $scope.createRuleMaker.filter, "explain": $scope.createRuleMaker.explain, "pk": $scope.selectedUuid},
+            $http.post('/api/create/rule/maker/', {"val": $scope.createRuleMaker.val, "drop_on_flag": $scope.createRuleMaker.dropFlag, "filter": $scope.createRuleMaker.filter, "explain": $scope.createRuleMaker.explain, "pk": $scope.selectedUuid, "range":$scope.createRuleMaker.range},
             {
                 headers: {
                     'Authorization' : token
@@ -444,12 +444,18 @@ app.controller('BigbrotherSniperCheckController', function($scope, $http, $inter
 
             }).then(function(response){
 
-            if (response.data.success)
+            if (response.data=="success")
             {
             $scope.createRuleMaker.filter ="";
             $scope.createRuleMaker.explain = "";
+            $scope.createRuleMaker.dropFlag = "";
+            $scope.createRuleMaker.val = "";
+            $scope.createRuleMaker.range = "";
+            $scope.selectedUuid = "";
+            selectedUuidRange = -1;
             $scope.loadFilterListText();
             $scope.loadFilterListLabel();
+            //ruleMakerInputInit();
             }
 
 
@@ -491,73 +497,116 @@ app.controller('BigbrotherSniperCheckController', function($scope, $http, $inter
 **규칙 설정 시 비콘 선택 이벤트
 */
     var selectedUuid;
+    var selectedUuidRange;
     $scope.uuidListClick = function () {
     selectedUuid = $scope.selectedUuid;
-/*
-        $http.post('/bigbrother_sniper/api/alert/list/log/date/view/', {"date": $scope.selectedDate},{
+
+        $http.post('/bigbrother_sniper/api/beacon/list/range/', {"id": selectedUuid},{
             headers: {
                 'Authorization' : token
             }
         }).then(function(response){
-            alert_list = response.data;
-            $scope.alerts = [];
-            for ( index in alert_list ) {
-                $scope.alerts.push(alert_list[index]);
-            }
-
+            selectedUuidRange = response.data;
         }, function (response){
-        });*/
+        });
+
     };
 
+    $scope.ruleSettingAboutRange = function() {
+        if(selectedUuid==-1324){
+            var mLine = "";
+            $scope.linebreak = function(text) {mLine = mLine + text};
+                    //scope.linebreak("<font size=\"3\">모든 반경</font>");
+                    $scope.createRuleMaker.range = 0;
 
-    $scope.labelFilterTable = function(flag, label_value, explain, location) {
+                    //$scope.linebreak("<div class=\"form-group\">");
+                        //$scope.linebreak("<input type=\"text\" name=\"range\" id=\"range\" data-toggle=\"popover\" data-trigger=\"focus\" class=\"form-control\" tabindex=\"1\" placeholder=\"거리값 \" value=\"range\" ng-model=\"createRuleMaker.range\">");
+                    //$scope.linebreak("</div>");
+
+            return $sce.trustAsHtml(mLine)
+
+            }
+        else if (selectedUuidRange>=0){
+        var mLine = "";
+        $scope.linebreak = function(text) {mLine = mLine + text};
+                $scope.linebreak("<font size=\"3\">최대 반경 : "+selectedUuidRange+"cm</font>");
+                $scope.createRuleMaker.range = selectedUuidRange;
+                //$scope.linebreak("<div class=\"form-group\">");
+                    //$scope.linebreak("<input type=\"text\" name=\"range\" id=\"range\" data-toggle=\"popover\" data-trigger=\"focus\" class=\"form-control\" tabindex=\"1\" placeholder=\"거리값 \" value=\"range\" ng-model=\"createRuleMaker.range\">");
+                //$scope.linebreak("</div>");
+
+        return $sce.trustAsHtml(mLine)
+
+             }
+
+             };
+
+    $scope.labelFilterTable = function(flag, label_value, explain, location, range) {
 
         var mLine = "";
         $scope.linebreak = function(text) {mLine = mLine + text};
         var color;
         if (flag=="Drop")
             color="red";
-            //return $sce.trustAsHtml("<font style='background-color:red'>"+flag+"</font>");
         else
             color="yellow";
 
-            //return $sce.trustAsHtml("<font style='background-color:yellow'>"+flag+"</font>");
+                $scope.linebreak("<th width=50>");
+                    $scope.linebreak("<font style='background-color:"+color+"'>"+flag+"</font>");
+                $scope.linebreak("</th>");
+                $scope.linebreak("<th width=200>");
+                       $scope.linebreak("제한 사물명 : "+label_value);
+                $scope.linebreak("</th>");
+                $scope.linebreak("<th width=200>");
+                       $scope.linebreak("분야 : "+explain);
+                $scope.linebreak("</th>");
+                $scope.linebreak("<th align=center width=150>");
+                       $scope.linebreak("위치 : "+location);
+                $scope.linebreak("</th>");
+                $scope.linebreak("<th>");
+                       $scope.linebreak("반경 : "+range+"cm");
+                $scope.linebreak("</th>");
 
-
-        //$scope.linebreak("<table>");
-                //$scope.linebreak("<tr>");
-                        $scope.linebreak("<th width=50>");
-                            $scope.linebreak("<font style='background-color:"+color+"'>"+flag+"</font>");
-                        $scope.linebreak("</th>");
-                        $scope.linebreak("<th width=200>");
-                               $scope.linebreak("제한 사물명 : "+label_value);
-                        $scope.linebreak("</th>");
-                        $scope.linebreak("<th width=200>");
-                               $scope.linebreak("분야 : "+explain);
-                        $scope.linebreak("</th>");
-                        $scope.linebreak("<th align=right>");
-                               $scope.linebreak("위치 : "+location);
-                        $scope.linebreak("</th>");
-                        //$scope.linebreak("<button id=\"3\" type=\"button\" class=\"btn btn-default\" style=\"float: right;height:40px;margin-top:-9px;\" ng-click=\"$scope.clickdelete2($event.target)\">삭제</button>");
-                //$scope.linebreak("</tr>");
-        //$scope.linebreak("</table>");
 
 
 
 
         return $sce.trustAsHtml(mLine)
 
-        /*<table>
-                <tr><th width=50><element ng-bind-html="flagBgcolorSellect(alert.color, alert.drop_on_flag)"></element></th><th width=100>[제한 사물명 : {{labelFilter.label_value}}</th><th width=200>분야 : {{labelFilter.explain}}</th><th align=right> [위치 : {{labelFilter.location}}</th>
+             };
+
+    $scope.textFilterTable = function(flag, text_value, explain, location, range) {
+
+        var mLine = "";
+        $scope.linebreak = function(text) {mLine = mLine + text};
+        var color;
+        if (flag=="Drop")
+            color="red";
+        else
+            color="yellow";
+
+                $scope.linebreak("<th width=50>");
+                    $scope.linebreak("<font style='background-color:"+color+"'>"+flag+"</font>");
+                $scope.linebreak("</th>");
+                $scope.linebreak("<th width=200>");
+                       $scope.linebreak("제한 텍스트 : "+text_value);
+                $scope.linebreak("</th>");
+                $scope.linebreak("<th width=200>");
+                       $scope.linebreak("분야 : "+explain);
+                $scope.linebreak("</th>");
+                $scope.linebreak("<th align=center width=150>");
+                       $scope.linebreak("위치 : "+location);
+                $scope.linebreak("</th>");
+                $scope.linebreak("<th>");
+                       $scope.linebreak("반경 : "+range+"cm");
+                $scope.linebreak("</th>");
 
 
 
-                <button id="{{labelFilter.id}}" type="button" class="btn btn-default" style="float: right;height:40px;margin-top:-9px;" ng-click="clickdelete2($event.target)">삭제</button>
 
 
-                </tr>
-        </table>
-        ")*/
+        return $sce.trustAsHtml(mLine)
+
              };
 });
 
@@ -604,7 +653,9 @@ function chulcheckJS() {
     }
 }
 
-
+function ruleMakerInputInit(){
+    document.beaconReachSetting.filter.value="";
+}
 
 app.controller('AlertInfoController_list', function($scope, $http){
 

@@ -25,6 +25,7 @@ class EmployeeProfile(models.Model):
 class LocationList(models.Model):
     uuid = models.UUIDField()
     location = models.CharField(max_length=32)
+    range = models.IntegerField()
     def __str__(self):
         return (self.location+" "+str(self.uuid))
 
@@ -33,6 +34,8 @@ class TextGuardList(models.Model):
     text_value = models.CharField(max_length=32, default='')
     drop_on_flag = models.BooleanField(default=False)
     explain = models.CharField(max_length=32, null=True)
+    range = models.IntegerField()
+    uuid = models.ForeignKey(LocationList, null=True)
     def __str__(self):
         return str(self.text_value)
 
@@ -40,8 +43,9 @@ class TextGuardList(models.Model):
 class LabelGuardList(models.Model):
     label_value = models.CharField(max_length=32, default='')
     drop_on_flag = models.BooleanField(default=False)
-    explain = models.CharField(max_length=32, default='', null=True)
-    uuid = models.ForeignKey(LocationList)
+    explain = models.CharField(max_length=32, null=True)
+    range = models.IntegerField()
+    uuid = models.ForeignKey(LocationList, null=True)
 
     def __str__(self):
         return str(self.label_value)

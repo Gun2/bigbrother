@@ -162,8 +162,10 @@
                 <!--text-->
                      {% verbatim %}
                 <div class="well" ng-repeat="textFilter in textFilters">
-                    {{textFilter.drop_on_flag}} 제한 텍스트 : {{textFilter.text_value}} 분야 : {{textFilter.explain}}
-                    <button id="{{textFilter.id}}" type="button" class="btn btn-default" style="float: right;height:40px;margin-top:-9px;" ng-click="clickdelete($event.target)">삭제</button>
+                    <table><tr>
+                        <element ng-bind-html="textFilterTable(textFilter.drop_on_flag, textFilter.text_value, textFilter.explain, textFilter.location, textFilter.range)"></element>
+                        <button id="{{textFilter.id}}" type="button" class="btn btn-default" style="float: right;height:40px;margin-top:-9px;" ng-click="clickdelete($event.target)">삭제</button>
+                    </tr></table>
 
                     <div class="modal fade" id="deleteText" role="dialog">
                         <div class="modal-dialog" >
@@ -193,7 +195,7 @@
                      {% verbatim %}
                 <div class="well" ng-repeat="labelFilter in labelFilters">
                     <table><tr>
-                        <element ng-bind-html="labelFilterTable(labelFilter.drop_on_flag, labelFilter.label_value, labelFilter.explain, labelFilter.location)"></element>
+                        <element ng-bind-html="labelFilterTable(labelFilter.drop_on_flag, labelFilter.label_value, labelFilter.explain, labelFilter.location, labelFilter.range)"></element>
                         <button id="{{labelFilter.id}}" type="button" class="btn btn-default" style="float: right;height:40px;margin-top:-9px;" ng-click="clickdelete2($event.target)">삭제</button>
                     </tr></table>
                     <div class="modal fade" id="deleteLabel" role="dialog">
@@ -232,12 +234,17 @@
                 </div>
                 <div class="modal-body">
                     <select ng-model="selectedUuid" style="width:100%;" ng-change="uuidListClick();" ng-mouseover="beaconListView()">
-                        <option ng-selected="selected" value="0">선택해 주십시오</option>
+                        <option ng-selected="selected" value=-1324>모든 지역</option>
                         {% verbatim %}
                         <option ng-repeat="Beacon in BeaconList" value="{{Beacon.pk}}">{{Beacon.location}}</option>
                         {% endverbatim %}
                     </select>
-                    <br><br>
+                    <div class="form-group">
+                        {% verbatim %}{{range}}<element ng-bind-html="ruleSettingAboutRange()"></element>{% endverbatim %}
+
+                        <input type="text" name="range" id="range" data-toggle="popover" data-trigger="focus" class="form-control" tabindex="1" placeholder="범위 (cm)" value="range" ng-model="createRuleMaker.range">
+                     </div>
+                    <hr><br>
                     <div class="form-group">
                                 <input type="text" name="filter" id="filter" data-toggle="popover" data-trigger="focus" tabindex="1" class="form-control"  placeholder="필터 " value="filter" ng-model="createRuleMaker.filter">
                      </div>

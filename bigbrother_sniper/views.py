@@ -371,6 +371,11 @@ class FilterListViewText(APIView):
             textFilters = []
 
             for TextFilter in TextFilters:
+                if TextFilter.uuid is None:
+                    location = '모든지역'
+                else:
+                    location = (TextFilter.uuid).location
+
 
                 if TextFilter.drop_on_flag==True:
                     drop_on_flag = "Drop"
@@ -381,8 +386,9 @@ class FilterListViewText(APIView):
                     "id": TextFilter.pk,
                     "text_value": TextFilter.text_value,
                     "drop_on_flag": drop_on_flag,
-                    "explain": TextFilter.explain
-
+                    "explain": TextFilter.explain,
+                    "location": location,
+                    "range": TextFilter.range
                 })
             result = {"textFilters": textFilters}
             return Response(result)
@@ -405,6 +411,12 @@ class FilterListViewLabel(APIView):
             labelFilters = []
 
             for LabelFilter in LabelFilters:
+                if LabelFilter.uuid is None:
+                    location = '모든지역'
+                else:
+                    location = (LabelFilter.uuid).location
+
+
                 if LabelFilter.drop_on_flag==True:
                     drop_on_flag = "Drop"
                 else:
@@ -415,7 +427,8 @@ class FilterListViewLabel(APIView):
                     "label_value": LabelFilter.label_value,
                     "drop_on_flag": drop_on_flag,
                     "explain": LabelFilter.explain,
-                    "location": (LabelFilter.uuid).location
+                    "location": location,
+                    "range": LabelFilter.range
                 })
             result = {"labelFilters": labelFilters}
             return Response(result)
@@ -505,7 +518,15 @@ class CreateRuleMaker(APIView):
             serializer = BigbrotherRuleManager(data=request.data)
 
             if serializer.is_valid():
-                beaconUuid = LocationList.objects.get(pk=serializer.validated_data['pk'])
+                if (serializer.validated_data['pk']==-1324):
+                    beaconUuid = None
+                else:
+                    beaconUuid = LocationList.objects.get(pk=serializer.validated_data['pk'])
+
+                    if (beaconUuid.range < serializer.validated_data['range']):
+                        result = "failure"
+                        return Response(result, status=status.HTTP_403_BAD_REQUEST)
+
                 if serializer.validated_data['drop_on_flag'] == 1:
                     tmpFlag = 'True'
                 else:
@@ -514,7 +535,9 @@ class CreateRuleMaker(APIView):
                     text = TextGuardList.objects.create(
                         text_value=serializer.validated_data['filter'],
                         drop_on_flag=tmpFlag,
-                        explain=serializer.validated_data['explain']
+                        explain=serializer.validated_data['explain'],
+                        uuid=beaconUuid,
+                        range=serializer.validated_data['range']
                     )
                     text.save()
 
@@ -523,7 +546,8 @@ class CreateRuleMaker(APIView):
                         label_value=serializer.validated_data['filter'],
                         drop_on_flag=tmpFlag,
                         explain=serializer.validated_data['explain'],
-                        uuid=beaconUuid
+                        uuid=beaconUuid,
+                        range = serializer.validated_data['range']
                     )
                     label.save()
 
@@ -833,3 +857,26 @@ class BeaconListSearchView(APIView):
 
         else:
             return Response("permission error", status=status.HTTP_403_FORBIDDEN)
+
+
+
+
+class BeaconListRange(APIView):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (JSONWebTokenAuthentication,)
+
+    def post(self, request):
+        if request.user:
+            serializer = IdRequestSerializer(data=request.data)
+
+            if serializer.is_valid():
+
+                location = LocationList.objects.get(pk=serializer.validated_data['id'])
+
+
+                return Response(location.range)
+            return Response("request error", status=status.HTTP_403_FORBIDDEN)
+
+        else:
+            return Response("Unknown User request", status=status.HTTP_403_FORBIDDEN)
+

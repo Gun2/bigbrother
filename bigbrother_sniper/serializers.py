@@ -65,6 +65,7 @@ class BigbrotherRuleManager(serializers.Serializer):
     explain = serializers.CharField(max_length=32)
     val = serializers.IntegerField()
     pk = serializers.IntegerField()
+    range = serializers.IntegerField()
 
 class DateListenerSerializer(serializers.Serializer):
     date = serializers.CharField(max_length=11)
