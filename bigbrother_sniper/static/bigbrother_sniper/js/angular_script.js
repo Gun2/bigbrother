@@ -530,7 +530,7 @@ app.controller('BigbrotherSniperCheckController', function($scope, $http, $inter
         var mLine = "";
         $scope.linebreak = function(text) {mLine = mLine + text};
                 $scope.linebreak("<font size=\"3\">최대 반경 : "+selectedUuidRange+"cm</font>");
-                $scope.createRuleMaker.range = selectedUuidRange;
+                //$scope.createRuleMaker.range = selectedUuidRange;
                 //$scope.linebreak("<div class=\"form-group\">");
                     //$scope.linebreak("<input type=\"text\" name=\"range\" id=\"range\" data-toggle=\"popover\" data-trigger=\"focus\" class=\"form-control\" tabindex=\"1\" placeholder=\"거리값 \" value=\"range\" ng-model=\"createRuleMaker.range\">");
                 //$scope.linebreak("</div>");

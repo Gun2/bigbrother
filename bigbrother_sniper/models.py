@@ -27,7 +27,7 @@ class LocationList(models.Model):
     location = models.CharField(max_length=32)
     range = models.IntegerField()
     def __str__(self):
-        return (self.location+" "+str(self.uuid))
+        return ((self.location)+" "+str(self.uuid))
 
 
 class TextGuardList(models.Model):
@@ -35,7 +35,8 @@ class TextGuardList(models.Model):
     drop_on_flag = models.BooleanField(default=False)
     explain = models.CharField(max_length=32, null=True)
     range = models.IntegerField()
-    uuid = models.ForeignKey(LocationList, null=True)
+    uuid = models.ForeignKey(LocationList, default='')
+
     def __str__(self):
         return str(self.text_value)
 
@@ -58,8 +59,15 @@ class DateRecord(models.Model):
         return str(self.date)
 
 
+class UserActiveLog(models.Model):
+    user = models.ForeignKey(User)
+    finalConnectionDate = models.DateTimeField()
+    connectionEndFlag = models.BooleanField(default=False)
+
+    def __str__(self):
+        return (str(self.user.username)+" "+str(self.user.last_name)+str(self.user.first_name)+" "+str(self.finalConnectionDate))
+
 class PostAlertMessageLog(models.Model):
-    username = models.CharField(max_length=6, default='')
     drop_on_flag = models.BooleanField(default=False)
     keyword = models.CharField(max_length=72, default='')
     pictureBase64 = models.CharField(max_length=1024000, default='')
@@ -68,6 +76,8 @@ class PostAlertMessageLog(models.Model):
     cause = models.CharField(max_length=300, default='')
     date = models.ForeignKey(DateRecord, default='', null=True)
     alertView = models.BooleanField(default=True)
+    userActiveLog = models.ForeignKey(UserActiveLog, default='', null=True)
+    userView = models.BooleanField(default=True)
 
     def __str__(self):
         return str(self.recordTime)
@@ -78,3 +88,4 @@ class GuardOrUtilImageSavezone(models.Model):
 
     def __str__(self):
         return str(self.pictureName)
+

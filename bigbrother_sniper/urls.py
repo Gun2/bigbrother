@@ -52,7 +52,8 @@ from .views import (
                     TextGuardListPostBeacon,
                     LabelGuardListPostBeacon,
                     BeaconListSearchView,
-                    BeaconListRange)
+                    BeaconListRange,
+                    AlertActiveLog)
 
 
 from rest_framework_jwt.views import obtain_jwt_token
@@ -98,7 +99,8 @@ urlpatterns = [
     url(r'^api/load/alert/image/$', LoadAlertImage.as_view()),
     url(r'^api/alert/list/log/date/$', AlertLogDateSearch.as_view()),
     url(r'^api/alert/list/log/date/view/$', AlertLogDateSearchView.as_view()),
+    url(r'^api/alert/active/log/$', AlertActiveLog.as_view()),
     url(r'^api/beacon/list/view/$', BeaconListSearchView.as_view()),
-    url(r'^api/beacon/list/range/$', BeaconListRange.as_view()),
+    url(r'^api/beacon/list/range/$', BeaconListRange.as_view())
 
 ]

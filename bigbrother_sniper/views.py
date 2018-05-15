@@ -31,14 +31,16 @@ from .models import ( AdminProfile,
                       PostAlertMessageLog,
                       DateRecord,
                       GuardOrUtilImageSavezone,
-                      LocationList
+                      LocationList,
+                      UserActiveLog
 
                       )
 
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 
-
+#스레드
+import threading
 
 import random
 from django.utils import timezone
@@ -62,6 +64,39 @@ def loginView(request):
 def virtualClassView(request):
 
     return render(request, 'bigbrother_sniper/alert_page.html')
+
+#스레드 호출 클레스
+class ThreadClass:
+    #사용자 기록 갱신 스레드
+    def userActiveLogRenewal(self):
+        connectingUserActiveList = UserActiveLog.objects.filter(connectionEndFlag = False)
+        for connectingUserActive in connectingUserActiveList:
+
+            #15초 이상이면 연결 해제
+            if ((timezone.now() - connectingUserActive.finalConnectionDate).seconds > 15):
+                connectingUserActive.connectionEndFlag=True
+                connectingUserActive.save()
+
+        #migrations시 주석처리 지점
+        threading.Timer(5, self.userActiveLogRenewal).start()
+
+#용자 기록 갱신스래드 시작
+ThreadClass = threading.Thread(target=ThreadClass().userActiveLogRenewal, args=())
+ThreadClass.start()
+
+#메소드 모음 클레스
+class BigBroUtils:
+
+    #사용자 활동 기록 생성
+    def createUserActiveLog(slef, user):
+        print (user)
+        activeLog = UserActiveLog.objects.create(
+            user=user,
+            finalConnectionDate=timezone.now(),
+            connectionEndFlag=False,
+        )
+        activeLog.save()
+
 
 class RegistrationView(APIView):
     permission_classes = (AllowAny,)
@@ -301,17 +336,21 @@ class PostAlertMessage(APIView):
                     explain = explainLabel + "\n"+explainText + "\n위와 같은 이유로 사진에 문제점이 발견되었습니다."
 
 
+                if UserActiveLog.objects.filter(user = request.user, connectionEndFlag = False):
+                    userActiveLog = UserActiveLog.objects.filter(user = request.user, connectionEndFlag = False).last()
+                else:
+                    userActiveLog = None
 
-                username = request.user.last_name+request.user.first_name
+
                 postLog = PostAlertMessageLog.objects.create(
-                    username=username,
                     drop_on_flag=tmpFlag,
                     keyword=serializer.validated_data['keyword'],
                     pictureBase64=serializer.validated_data['pictureBase64'],
                     recordTime=timezone.now(),
                     user = request.user,
                     date=DateNow,
-                    cause = explain
+                    cause = explain,
+                    userActiveLog = userActiveLog
 
                 )
                 postLog.save()
@@ -343,7 +382,7 @@ class PostAlertMessageListView(APIView):
 
                 alerts.append({
                     "id": Alert.pk,
-                    "username": Alert.username,
+                    "username": Alert.user.last_name+Alert.user.first_name,
                     "drop_on_flag": drop_on_flag,
                     "keyword": Alert.keyword,
                     "recordTime": Alert.recordTime,
@@ -721,7 +760,7 @@ class AlertLogDateSearchView(APIView):
                         "keyword": SearchAlertList.keyword,
                         "recordTime": SearchAlertList.recordTime,
                         "drop_on_flag": tmpFlag,
-                        "username" : SearchAlertList.username
+                        "username" : SearchAlertList.user.last_name+SearchAlertList.user.first_name
                     })
                 return Response(results)
         else:
@@ -797,7 +836,7 @@ class TextGuardListPostBeacon(APIView):
         else:
             return Response("Unknown User request", status=status.HTTP_403_FORBIDDEN)
 
-
+#지역별 사물 필터값 반환
 class LabelGuardListPostBeacon(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (JSONWebTokenAuthentication,)
@@ -806,25 +845,45 @@ class LabelGuardListPostBeacon(APIView):
         if request.user:
             serializer = RequestFilterWithUuidSerializer(data=request.data)
 
-            labelGuardList = LabelGuardList.objects.all()
 
             if serializer.is_valid():
-                list = serializer.validated_data['BeaconInfoList']
-                for aa in list:
-                    print ('aa')
+
+                labelGuard_infos = []
+                # 전체지역 필터값 넣기
+                labelGuardList = LabelGuardList.objects.filter(uuid=None)
+                for labelGuard in labelGuardList:
+                    labelGuard_infos.append({
+                        "label_value": labelGuard.label_value,
+                        "drop_on_flag": labelGuard.drop_on_flag,
+                        "location": "모든지역",
+                    })
+
+                Beaconlist = serializer.validated_data['BeaconInfoList']
+                for Beacon in Beaconlist:
+
+                    #DB에 등록된 uuid인지 확인
+                    if LocationList.objects.filter(uuid = Beacon[0]):
+
+                        # 지역별 범위 확인 후 필터값 삽입
+                        location = LocationList.objects.get(uuid = Beacon[0])
+                        labelGuardList = LabelGuardList.objects.filter(uuid = location)
+                        for labelGuard in labelGuardList:
+
+                            if (labelGuard.range > ((int)(Beacon[1]))):
+                                labelGuard_infos.append({
+                                    "label_value": labelGuard.label_value,
+                                    "drop_on_flag": labelGuard.drop_on_flag,
+                                    "location": labelGuard.uuid.location,
+                                })
+
+
+                print (labelGuard_infos)
                 print (serializer.validated_data['BeaconInfoList'])
-                if labelGuardList:
-                    labelGuard_infos = []
-                    for list in labelGuardList:
-                        labelGuard_infos.append({
-                            "label_value": list.label_value,
-                            "drop_on_flag": list.drop_on_flag,
-                        })
 
                 # 결과값
-                    return Response(labelGuard_infos)
+                return Response(labelGuard_infos)
 
-                return Response("not found label list", status=status.HTTP_403_FORBIDDEN)
+                #return Response("not found label list", status=status.HTTP_403_FORBIDDEN)
             return Response("request error", status=status.HTTP_403_FORBIDDEN)
 
         else:
@@ -833,7 +892,6 @@ class LabelGuardListPostBeacon(APIView):
 
 
 #비콘 목록 출력
-
 class BeaconListSearchView(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (JSONWebTokenAuthentication,)
@@ -860,7 +918,7 @@ class BeaconListSearchView(APIView):
 
 
 
-
+#규칙 설정 최대거리 반환
 class BeaconListRange(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (JSONWebTokenAuthentication,)
@@ -876,6 +934,44 @@ class BeaconListRange(APIView):
 
                 return Response(location.range)
             return Response("request error", status=status.HTTP_403_FORBIDDEN)
+
+        else:
+            return Response("Unknown User request", status=status.HTTP_403_FORBIDDEN)
+
+
+
+
+
+
+#규칙 설정 최대거리 반환
+class AlertActiveLog(APIView):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (JSONWebTokenAuthentication,)
+
+
+    def get(self, request):
+        if request.user:
+            activeLogList = UserActiveLog.objects.filter(user=request.user)
+            #로그 없으면 처음 있으면 플레그 검사
+            if activeLogList:
+                activeLog = activeLogList.last()
+                #플레그 활성화시 플레그 검사
+                if activeLog.connectionEndFlag:
+                    BigBroUtils().createUserActiveLog(request.user)
+
+                    return Response("User Active Log is Created", status=status.HTTP_200_OK)
+
+                else:
+                    activeLog.finalConnectionDate = timezone.now()
+                    activeLog.save()
+
+                return Response("User Active Log is Renewaled", status=status.HTTP_200_OK)
+
+            #없으면
+            else:
+                #사용자 로그 생성
+                BigBroUtils().createUserActiveLog(request.user)
+            return Response("User Active Log is Created", status=status.HTTP_200_OK)
 
         else:
             return Response("Unknown User request", status=status.HTTP_403_FORBIDDEN)
