@@ -1117,3 +1117,26 @@ class NewAlertWasRead(APIView):
         else:
             return Response(" Error.", status=status.HTTP_403_FORBIDDEN)
 
+
+
+
+#사용자에게 알림 리스트 ㅈㅔ거
+class postAlertList(APIView):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (JSONWebTokenAuthentication,)
+
+    def post(self, request):
+
+        if request.user:
+            serializer = IdRequestSerializer(data=request.data)
+            if serializer.is_valid():
+
+                logId = PostAlertMessageLog.objects.get(pk = serializer.validated_data['id'])
+                logId.userView = False;
+                logId.save()
+
+            return Response(status=status.HTTP_200_OK)
+        else:
+
+            return Response("Error.", status=status.HTTP_403_FORBIDDEN)
+

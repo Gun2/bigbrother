@@ -55,7 +55,8 @@ from .views import (
                     AlertActiveLog,
                     FilterListViewLocation,
                     NewAlertWasRead,
-                    Deletelocation)
+                    Deletelocation,
+                    postAlertList)
 
 
 from rest_framework_jwt.views import obtain_jwt_token
@@ -108,6 +109,7 @@ urlpatterns = [
 
     url(r'^api/load/alert/list/$', LoadAlertList.as_view()),
     url(r'^api/load/alert/image/$', LoadAlertImage.as_view()),
+    url(r'^api/post/alert/list/$', postAlertList.as_view()),
 
     url(r'^api/alert/list/log/date/$', AlertLogDateSearch.as_view()),
     url(r'^api/alert/list/log/date/view/$', AlertLogDateSearchView.as_view()),
