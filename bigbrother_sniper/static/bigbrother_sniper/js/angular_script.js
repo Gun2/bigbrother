@@ -761,6 +761,9 @@ function activeChulCheck() {
 function activeChulCheckList() {
     localStorage.setItem('chulCheckActived',"20132309");
 }
+function activeChulCheckLis() {
+    localStorage.setItem('chulCheckActived',"20132310");
+}
 
 function chulcheckJS() {
     const chulCheckInfo = localStorage.getItem('chulCheckActived');
@@ -780,7 +783,13 @@ function chulcheckJS() {
             $('#chul3').tab('show');
         });
     }
+    else if(chulCheckInfo == "20132310") {
+        $(document).ready(function(){
+            $('#chul4').tab('show');
+        });
+    }
 }
+
 
 function ruleMakerInputInit(){
     document.beaconReachSetting.filter.value="";
@@ -891,6 +900,49 @@ app.controller('AlertInfoController_list', function($scope, $http){
         });
 
     };
+});
+
+app.controller('UserLogInfoController_list', function($scope, $http){
+
+   $scope.UserLogInfoListView = function () {
+        $http.get('/bigbrother_sniper/api/UserLog/date/',
+        {
+            headers: {
+                'Authorization' : token
+            }
+
+        }).then(function(response){
+            LogDates = response.data;
+            $scope.DateList = [];
+            for ( index in LogDates)
+                {
+                    $scope.DateList.push(LogDates[index]);
+                }
+         },function (response){
+
+         });
+    };
+
+    var selectedDate;
+
+    $scope.UserLogInfoListViewClick = function () {
+
+    selectedDate = $scope.selectedDate;
+        $http.post('/bigbrother_sniper/api/UserLog/date/view/', {"date": $scope.selectedDate},{
+            headers: {
+                'Authorization' : token
+            }
+        }).then(function(response){
+            alert_list = response.data;
+            $scope.alerts = [];
+            for ( index in alert_list ) {
+                $scope.alerts.push(alert_list[index]);
+            }
+
+        }, function (response){
+        });
+    };
+
 });
 
 

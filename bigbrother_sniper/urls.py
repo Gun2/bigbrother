@@ -55,6 +55,8 @@ from .views import (
                     AlertActiveLog,
                     FilterListViewLocation,
                     NewAlertWasRead,
+                    UserLogDateSearchView,
+                    UserLogDateSearch,
                     Deletelocation)
 
 
@@ -111,6 +113,9 @@ urlpatterns = [
 
     url(r'^api/alert/list/log/date/$', AlertLogDateSearch.as_view()),
     url(r'^api/alert/list/log/date/view/$', AlertLogDateSearchView.as_view()),
+
+    url(r'^api/UserLog/date/$', UserLogDateSearch.as_view()),
+    url(r'^api/UserLog/date/view/$', UserLogDateSearchView.as_view()),
 
     url(r'^api/alert/active/log/$', AlertActiveLog.as_view()),
 

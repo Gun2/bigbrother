@@ -90,7 +90,7 @@ class ThreadClass:
                 connectingUserActive.save()
 
         #migrations시 주석처리 지점
-        #threading.Timer(5, self.userActiveLogRenewal).start()
+        threading.Timer(5, self.userActiveLogRenewal).start()
 
 #용자 기록 갱신스래드 시작
 ThreadClass = threading.Thread(target=ThreadClass().userActiveLogRenewal, args=())
@@ -805,8 +805,57 @@ class LoadAlertImage(APIView):
             return Response("Error", status=status.HTTP_403_FORBIDDEN)
 
 
+class UserLogDateSearch(APIView):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (JSONWebTokenAuthentication,)
+
+    def get(self, request):
+        if request.user.is_staff:
+            userLogDataLists = UserActiveDateRecord.objects.all()
+
+            results = []
+
+            for userLogDataList in userLogDataLists:
+                results.append({
+                    "date": userLogDataList.date,
+                })
+
+            return Response(results)
+
+        else:
+            return Response("no permission", status=status.HTTP_403_FORBIDDEN)
 
 
+class UserLogDateSearchView(APIView):
+        permission_classes = (IsAuthenticated,)
+        authentication_classes = (JSONWebTokenAuthentication,)
+
+        def post(self, request):
+            if request.user.is_staff:
+                serializer = DateListenerSerializer(data=request.data)
+                if serializer.is_valid():
+                    SearchDate = UserActiveDateRecord.objects.get(date=serializer.validated_data['date'])
+
+                    SearchUserLogLists = UserActiveLog.objects.filter(date=SearchDate)
+                    results = []
+
+                    for SearchUserLogList in SearchUserLogLists:
+                        if SearchUserLogList.connectionEndFlag == True:
+                            results.append({
+                                "startConnectionDate": SearchUserLogList.startConnectionDate,
+                                "finalConnectionDate":  SearchUserLogList.finalConnectionDate,
+                                "username": SearchUserLogList.user.last_name + SearchUserLogList.user.first_name
+                            })
+                        else:
+                            results.append({
+                                "startConnectionDate": SearchUserLogList.startConnectionDate,
+                                "finalConnectionDate": "현재 진행중",
+                                "username": SearchUserLogList.user.last_name + SearchUserLogList.user.first_name
+                            })
+
+                    return Response(results)
+            else:
+                return Response("no permission", status=status.HTTP_403_FORBIDDEN)
 
 
 class AlertLogDateSearch(APIView):
@@ -850,7 +899,7 @@ class AlertLogDateSearchView(APIView):
                         tmpFlag = "경고 판정"
 
                     results.append({
-                        "id": SearchAlertList.pk,
+                        "id": SearchAlertList.user.pk,
                         "keyword": SearchAlertList.keyword,
                         "recordTime": SearchAlertList.recordTime,
                         "drop_on_flag": tmpFlag,
