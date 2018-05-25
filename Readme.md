@@ -1,5 +1,6 @@
-migrate시 주석처리 지점 주석 처리르 하고 makemigrations 실시 하 것
-        #threading.Timer(5, self.userActiveLogRenewal).start()
+migrate시 주석처리 지점 주석 처리를 하고 makemigrations 실시 하 것
+
+>        #threading.Timer(5, self.userActiveLogRenewal).start()
 
 
 
