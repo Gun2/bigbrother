@@ -120,6 +120,7 @@ REST_FRAMEWORK = {
 }
 
 JWT_AUTH = {
+    'JWT_ALGORITHM': 'HS256',
     'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=60000),
     'JWT_ALLOW_REFRESH': True,
 }

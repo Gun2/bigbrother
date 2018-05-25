@@ -34,13 +34,12 @@ from .views import (
                     TextGuardListPost,
                     LabelGuardListPost,
                     PostAlertMessage,
-                    FilterListViewLabel,
-                    FilterListViewText,
                     PostAlertMessageListView,
                     DeleteAlertLog,
                     DeleteAlertText,
                     DeleteAlertLabel,
                     CreateRuleMaker,
+                    CreateLocationMaker,
                     PostAlertMessageListPreview,
                     DeleteAlertLogAll,
                     LoadAlertList,
@@ -48,7 +47,15 @@ from .views import (
                     AlertLogDateSearch,
                     AlertLogDateSearchView,
                     HidnAlertLog,
-                    HidnAlertLogAll)
+                    HidnAlertLogAll,
+                    TextGuardListPostBeacon,
+                    LabelGuardListPostBeacon,
+                    BeaconListSearchView,
+                    BeaconListRange,
+                    AlertActiveLog,
+                    FilterListViewLocation,
+                    NewAlertWasRead,
+                    Deletelocation)
 
 
 from rest_framework_jwt.views import obtain_jwt_token
@@ -76,23 +83,38 @@ urlpatterns = [
 
     url(r'^api/bigbrother/guard/list/text/$', TextGuardListPost.as_view()),
     url(r'^api/bigbrother/guard/list/label/$', LabelGuardListPost.as_view()),
+    url(r'^api/bigbrother/guard/list/text/beacon/$', TextGuardListPostBeacon.as_view()),
+    url(r'^api/bigbrother/guard/list/label/beacon/$', LabelGuardListPostBeacon.as_view()),
+
     url(r'^api/bigbrother/post/alert/message/$', PostAlertMessage.as_view()),
     url(r'^api/bigbrother/post/alert/message/list/view/$', PostAlertMessageListView.as_view()),
     url(r'^api/bigbrother/post/alert/message/list/preview/$', PostAlertMessageListPreview.as_view()),
-    url(r'^api/bigbrother/filter/list/view/text/$', FilterListViewText.as_view()),
-    url(r'^api/bigbrother/filter/list/view/label/$', FilterListViewLabel.as_view()),
+
+    url(r'^api/bigbrother/filter/list/view/location/$', FilterListViewLocation.as_view()),
+
+    url(r'^api/read/new/alert/$', NewAlertWasRead.as_view()),
+
     url(r'^api/hidn/alert/log/$', HidnAlertLog.as_view()),
     url(r'^api/hidn/alert/log/all/$', HidnAlertLogAll.as_view()),
+
+    url(r'^api/delete/location/$', Deletelocation.as_view()),
     url(r'^api/delete/alert/log/$', DeleteAlertLog.as_view()),
     url(r'^api/delete/alert/log/all/$', DeleteAlertLogAll.as_view()),
     url(r'^api/delete/alert/text/$', DeleteAlertText.as_view()),
     url(r'^api/delete/alert/label/$', DeleteAlertLabel.as_view()),
+
+    url(r'^api/create/location/maker/$', CreateLocationMaker.as_view()),
     url(r'^api/create/rule/maker/$', CreateRuleMaker.as_view()),
+
     url(r'^api/load/alert/list/$', LoadAlertList.as_view()),
     url(r'^api/load/alert/image/$', LoadAlertImage.as_view()),
+
     url(r'^api/alert/list/log/date/$', AlertLogDateSearch.as_view()),
     url(r'^api/alert/list/log/date/view/$', AlertLogDateSearchView.as_view()),
 
+    url(r'^api/alert/active/log/$', AlertActiveLog.as_view()),
 
+    url(r'^api/beacon/list/view/$', BeaconListSearchView.as_view()),
+    url(r'^api/beacon/list/range/$', BeaconListRange.as_view())
 
 ]

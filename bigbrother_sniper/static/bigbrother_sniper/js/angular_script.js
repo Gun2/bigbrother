@@ -2,7 +2,7 @@
 //var token = "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InByb2Zlc3NvcjEiLCJvcmlnX2lhdCI6MTUxMDU1NTEwOSwidXNlcl9pZCI6MTcsImVtYWlsIjoicHJvZmVzc29yMUBkanUuYWMua3IiLCJleHAiOjE1MTA2MTUxMDl9.TwFWXxuA7aiqOMHTS0RZZwumS1KDdgmoafJOI69kNZQ";
 var token;
 
-var app = angular.module('BigBrotherApp', ['ngFileUpload']);
+var app = angular.module('BigBrotherApp', ['ngFileUpload','ngSanitize']);
 
 
 app.controller('localStorage', function($scope, $http){
@@ -67,9 +67,10 @@ var login_error;
                    $("#login_error").appendTo('body').modal();
                 }
         }, function(response){
+        /*
             login_error = "회원이 아닙니다. 회원신청 바랍니다.";
             $("#no_login").html(login_error);
-            $("#login_error").appendTo('body').modal();
+            $("#login_error").appendTo('body').modal();*/
             });
   };
 
@@ -178,7 +179,7 @@ app.controller('RegisterController',['$scope', '$http', function ($scope, $http)
 }]);
 
 
-app.controller('BigbrotherController', function($scope, $http, $interval){
+app.controller('BigbrotherController', function($scope, $http, $interval, $sce){
 
     $scope.loadAlertList = function () {
         $http.get('/bigbrother_sniper/api/bigbrother/post/alert/message/list/view/', {
@@ -196,6 +197,10 @@ app.controller('BigbrotherController', function($scope, $http, $interval){
         });
     };
 
+
+    $scope.flagBgcolorSellect = function(color, flag) {
+               return $sce.trustAsHtml("<font style='background-color:"+color+"'>"+flag+"</font>");
+             };
 
     $scope.deletealert = function(){
         $http.post('/bigbrother_sniper/api/bigbrother/delete/',{"id": deleteId}, {
@@ -318,9 +323,56 @@ Bigbrother 디비 삭제 (로그삭제
 
 
     };
+
+//알림 클래스
+  $scope.alertClass = function (flag, newFlag) {
+    var className = '';
+    if (newFlag == true){
+        if (flag === 'Drop') {
+          className = 'alert alert-danger';
+        } else {
+          className = 'alert alert-warning';
+        }
+    }
+    else{
+          className = 'well';
+    }
+    return className;
+  };
+
+  $scope.newAlertWasRead = function(clickId){
+        $http.post('/bigbrother_sniper/api/read/new/alert/',{"id": clickId}, {
+            headers: {
+                'Authorization' : token
+            }
+        }).then(function(response){
+                $scope.loadAlertList();
+
+        },function(response){
+        });
+
+    };
 });
 
-app.controller('BigbrotherSniperCheckController', function($scope, $http, $interval){
+app.controller('BigbrotherSniperCheckController', function($scope, $http, $interval, $sce){
+
+//Bigbrother 장소 리스트
+ $scope.loadListLocation = function () {
+        $http.get('/bigbrother_sniper/api/bigbrother/filter/list/view/location/', {
+            headers: {
+                'Authorization' : token
+            }
+        }).then(function(response){
+            location_list = response.data.locationFilters;
+            $scope.locations = [];
+            for ( index in location_list ) {
+                $scope.locations.push(location_list[index]);
+            }
+            
+
+        }, function (response){
+        });
+    };
 
 //Bigbrother 규칙 리스트
  $scope.loadFilterListText = function () {
@@ -356,14 +408,31 @@ app.controller('BigbrotherSniperCheckController', function($scope, $http, $inter
         });
     };
 
+    //위치 삭제
+   $scope.deleteLocationList = function(){
+        $http.post('/bigbrother_sniper/api/delete/location/',{"id": deleteId}, {
+            headers: {
+                'Authorization' : token
+            }
+        }).then(function(response){
+            $scope.loadListLocation();
+
+
+        },function(response){
+             $("#bigbrother-failed-modal").appendTo("body").modal();
+
+        });
+
+    };
+
     $scope.deleteAlertFilterText = function(){
         $http.post('/bigbrother_sniper/api/delete/alert/text/',{"id": deleteId}, {
             headers: {
                 'Authorization' : token
             }
         }).then(function(response){
-             $scope.loadFilterListText();
-             $scope.loadFilterListLabel();
+            $scope.loadListLocation();
+
 
         },function(response){
              $("#bigbrother-failed-modal").appendTo("body").modal();
@@ -378,8 +447,7 @@ app.controller('BigbrotherSniperCheckController', function($scope, $http, $inter
             }
         }).then(function(response){
 
-            $scope.loadFilterListText();
-            $scope.loadFilterListLabel();
+            $scope.loadListLocation();
 
         },function(response){
              $("#bigbrother-failed-modal").appendTo("body").modal();
@@ -388,8 +456,14 @@ app.controller('BigbrotherSniperCheckController', function($scope, $http, $inter
 
     };
 
-    var deleteId = 0;
+    var deleteId;
+        //위치 삭제 알림창
+  $scope.clicklocationdelete = function(deleteTarget){
 
+        deleteId = deleteTarget.id;
+        $("#deletelocation").css("z-index", "9999");
+        $("#deletelocation").appendTo("body").modal();
+         }
   $scope.clickdelete = function(deleteTarget){
         deleteId = deleteTarget.id;
         $("#deleteText").css("z-index", "9999");
@@ -400,6 +474,7 @@ app.controller('BigbrotherSniperCheckController', function($scope, $http, $inter
         $("#deleteLabel").css("z-index", "9999");
         $("#deleteLabel").appendTo("body").modal();
          }
+
 
 /***
 
@@ -425,15 +500,30 @@ app.controller('BigbrotherSniperCheckController', function($scope, $http, $inter
 /***
 ***규칙 만들기
 ***/
-    $scope.modalUp = function () {
-
-            $("#beaconReachSetting").appendTo('body').modal();
+    $scope.locationModalUp = function () {
+            //selectedUuid=-1;
+            $("#locationSetting").appendTo('body').modal();
         };
+    var GlovalSelectedId;
+    var GlovalSelectedUuid;
+    var GlovalSelectedRange;
+    var GlovalSelectedLocation;
 
-    $scope.createRuleMaker = function () {
+    $scope.RuleModalUp = function (id, uuid, range, location) {
+    GlovalSelectedId = id;
+    GlovalSelectedUuid = uuid;
+    GlovalSelectedRange = range;
+    GlovalSelectedLocation = location;
+        //selectedUuid=-1;
+        $("#ruleSetting").appendTo('body').modal();
+    };
+
+
+
+$scope.createLocationMaker = function () {
 
             $("#beaconReachSetting").appendTo('body').modal();
-            $http.post('/api/create/rule/maker/', {"val": $scope.createRuleMaker.val, "drop_on_flag": $scope.createRuleMaker.dropFlag, "filter": $scope.createRuleMaker.filter, "explain": $scope.createRuleMaker.explain},
+            $http.post('/api/create/location/maker/', {"uuid": $scope.createLocationMaker.uuid, "location": $scope.createLocationMaker.location, "maxRange": $scope.createLocationMaker.maxRange},
             {
                 headers: {
                     'Authorization' : token
@@ -441,12 +531,15 @@ app.controller('BigbrotherSniperCheckController', function($scope, $http, $inter
 
             }).then(function(response){
 
-            if (response.data.success)
+            if (response.data=="success")
             {
-            $scope.createRuleMaker.filter ="";
-            $scope.createRuleMaker.explain = "";
-            $scope.loadFilterListText();
-            $scope.loadFilterListLabel();
+            $scope.createLocationMaker.uuid ="";
+            $scope.createLocationMaker.maxRange = "";
+            $scope.createLocationMaker.location = "";
+            $scope.loadListLocation();
+            //$scope.loadFilterListText();
+            //$scope.loadFilterListLabel();
+            //ruleMakerInputInit();
             }
 
 
@@ -459,6 +552,191 @@ app.controller('BigbrotherSniperCheckController', function($scope, $http, $inter
 
         };
 
+    $scope.createRuleMaker = function () {
+            var picRequest = false;
+            if ($scope.createRuleMaker.picRequest){picRequest = $scope.createRuleMaker.picRequest;}
+            $("#beaconReachSetting").appendTo('body').modal();
+            $http.post('/api/create/rule/maker/', {"val": $scope.createRuleMaker.val,"drop_on_flag": $scope.createRuleMaker.dropFlag, "filter": $scope.createRuleMaker.filter, "explain": $scope.createRuleMaker.explain, "pk": GlovalSelectedId, "range":$scope.createRuleMaker.range, "picRequest": picRequest},
+            {
+                headers: {
+                    'Authorization' : token
+                }
+
+            }).then(function(response){
+
+            if (response.data=="success")
+            {
+            $scope.createRuleMaker.filter ="";
+            $scope.createRuleMaker.explain = "";
+            $scope.createRuleMaker.dropFlag = "";
+            $scope.createRuleMaker.picRequest = "";
+            $scope.createRuleMaker.val = "";
+            $scope.createRuleMaker.range = "";
+            $scope.selectedUuid = "";
+            selectedUuidRange = -1;
+            $scope.loadListLocation();
+            //$scope.loadFilterListText();
+            //$scope.loadFilterListLabel();
+            //ruleMakerInputInit();
+            }
+
+
+            }, function (response){
+
+
+            });
+
+
+
+        };
+/*
+**비콘 목록 불러오기
+*/
+   $scope.beaconListView = function () {
+        $http.get('/bigbrother_sniper/api/beacon/list/view/',
+        {
+            headers: {
+                'Authorization' : token
+            }
+
+        }).then(function(response){
+            Beacons = response.data;
+            $scope.BeaconList = [];
+            for ( index in Beacons)
+                {
+                    $scope.BeaconList.push(Beacons[index]);
+                }
+         },function (response){
+
+         });
+
+
+
+
+    };
+
+/*
+**규칙 설정 시 비콘 선택 이벤트
+*/
+    var selectedUuid;
+    var selectedUuidRange;
+    $scope.uuidListClick = function () {
+    selectedUuid = $scope.selectedUuid;
+
+        $http.post('/bigbrother_sniper/api/beacon/list/range/', {"id": selectedUuid},{
+            headers: {
+                'Authorization' : token
+            }
+        }).then(function(response){
+            selectedUuidRange = response.data;
+        }, function (response){
+        });
+
+    };
+
+
+    $scope.ruleSettingAboutDialog = function() {
+
+
+        var mLine = "";
+        $scope.linebreak = function(text) {mLine = mLine + text};
+                $scope.linebreak("<font size=\"5\">위치 : "+GlovalSelectedLocation+"</font><br>");
+                $scope.linebreak("<font size=\"2\">UUID : "+GlovalSelectedUuid+"</font><br>");
+                $scope.linebreak("<font size=\"3\">최대 반경 : "+GlovalSelectedRange+"cm</font>");
+        if(GlovalSelectedRange==0){$scope.createRuleMaker.range = 0;}
+        return $sce.trustAsHtml(mLine)
+
+
+
+             };
+
+    $scope.locationTable = function(location, uuid, range) {
+
+        var mLine = "";
+        $scope.linebreak = function(text) {mLine = mLine + text};
+
+                $scope.linebreak("<th width=200>");
+                       $scope.linebreak("위치 : "+location);
+                $scope.linebreak("</th>");
+                $scope.linebreak("<th width=400>");
+                       $scope.linebreak("비콘 uuid : "+uuid);
+                $scope.linebreak("</th>");
+                $scope.linebreak("<th align=center width=150>");
+                       $scope.linebreak("최대 반경 : "+range+"cm");
+                $scope.linebreak("</th>");
+
+
+        return $sce.trustAsHtml(mLine)
+
+             };
+
+    $scope.labelFilterTable = function(flag, label_value, explain, location, range, picRequest) {
+
+        var mLine = "";
+        $scope.linebreak = function(text) {mLine = mLine + text};
+        var color;
+        if (flag=="Drop")
+            color="red";
+        else
+            color="yellow";
+
+                $scope.linebreak("<th width=50>");
+                    $scope.linebreak("<font style='background-color:"+color+"'>"+flag+"</font>");
+                $scope.linebreak("</th>");
+                $scope.linebreak("<th width=200>");
+                       $scope.linebreak("제한 사물명 : "+label_value);
+                $scope.linebreak("</th>");
+                $scope.linebreak("<th width=200>");
+                       $scope.linebreak("분야 : "+explain);
+                $scope.linebreak("</th>");
+                $scope.linebreak("<<th width=200>");
+                       $scope.linebreak("반경 : "+range+"cm");
+                $scope.linebreak("</th>");
+                $scope.linebreak("<th>");
+                       $scope.linebreak("사진 요청 : "+picRequest);
+                $scope.linebreak("</th>");
+
+
+
+
+
+        return $sce.trustAsHtml(mLine)
+
+             };
+
+    $scope.textFilterTable = function(flag, text_value, explain, location, range, picRequest) {
+
+        var mLine = "";
+        $scope.linebreak = function(text) {mLine = mLine + text};
+        var color;
+        if (flag=="Drop")
+            color="red";
+        else
+            color="yellow";
+
+                $scope.linebreak("<th width=50>");
+                    $scope.linebreak("<font style='background-color:"+color+"'>"+flag+"</font>");
+                $scope.linebreak("</th>");
+                $scope.linebreak("<th width=200>");
+                       $scope.linebreak("제한 텍스트 : "+text_value);
+                $scope.linebreak("</th>");
+                $scope.linebreak("<th width=200>");
+                       $scope.linebreak("분야 : "+explain);
+                $scope.linebreak("</th>");
+                 $scope.linebreak("<<th width=200>");
+                       $scope.linebreak("반경 : "+range+"cm");
+                $scope.linebreak("</th>");
+                $scope.linebreak("<th>");
+                       $scope.linebreak("사진 요청 : "+picRequest);
+                $scope.linebreak("</th>");
+
+
+
+
+
+        return $sce.trustAsHtml(mLine)
+
+             };
 });
 
 
@@ -504,7 +782,9 @@ function chulcheckJS() {
     }
 }
 
-
+function ruleMakerInputInit(){
+    document.beaconReachSetting.filter.value="";
+}
 
 app.controller('AlertInfoController_list', function($scope, $http){
 
@@ -550,12 +830,14 @@ app.controller('AlertInfoController_list', function($scope, $http){
     };
 
         var deleteId = 0;
+        //알림 삭제창
       $scope.clickdelete = function(deleteTarget){
 
             deleteId = deleteTarget.id;
             $("#deleteLogCheck").css("z-index", "9999");
             $("#deleteLogCheck").appendTo("body").modal();
              }
+
 
 
      $scope.deleteAlertFilter = function(){
