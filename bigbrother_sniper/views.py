@@ -740,7 +740,7 @@ class DeleteAlertLogAll(APIView):
 
 
 
-
+#사용자에게 알림 리스트 제공
 class LoadAlertList(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (JSONWebTokenAuthentication,)
@@ -753,17 +753,18 @@ class LoadAlertList(APIView):
             listAlerts = []
 
             for AlertList in AlertLists:
-                if AlertList.drop_on_flag==True:
-                    tmpFlag ="위험 판정"
-                else:
-                    tmpFlag="경고 판정"
+                if AlertList.userView:
+                    if AlertList.drop_on_flag==True:
+                        tmpFlag ="위험 판정"
+                    else:
+                        tmpFlag="경고 판정"
 
-                listAlerts.append({
-                    "id": AlertList.pk,
-                    "keyword": AlertList.keyword,
-                    "recordTime": AlertList.recordTime,
-                    "drop_on_flag" :tmpFlag
-                })
+                    listAlerts.append({
+                        "id": AlertList.pk,
+                        "keyword": AlertList.keyword,
+                        "recordTime": AlertList.recordTime,
+                        "drop_on_flag" :tmpFlag
+                    })
             return Response(listAlerts)
         else:
 
