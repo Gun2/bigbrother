@@ -1,3 +1,9 @@
+migrate시 주석처리 지점 주석 처리르 하고 makemigrations 실시 하 것
+        #threading.Timer(5, self.userActiveLogRenewal).start()
+
+
+
+
 Add guard or util image savezone데이터베이스에 밑의 값 저장
 
 PictureName: guardPic
