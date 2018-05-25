@@ -75,7 +75,7 @@
 
                     </div>
                     {% verbatim %}
-                    <div class="well" ng-repeat="alert in alerts">
+                    <div ng-class="alertClass(alert.drop_on_flag, alert.newFlag)" ng-repeat="alert in alerts" ng-click="newAlertWasRead(alert.id)">
                         <table>
                             <tr><th width=50><element ng-bind-html="flagBgcolorSellect(alert.color, alert.drop_on_flag)"></element></th><th width=100>[이름 : {{alert.username}}] </th><th width=200>  {{alert.keyword}}</th><th align=right> [기록 시간 :{{alert.recordTime}}]</th>
 
@@ -155,15 +155,43 @@
 
 </div>
 
-<div id="bigbrother_sniper" class="tab-pane fade" ng-controller="BigbrotherSniperCheckController" ng-init="loadFilterListText();loadFilterListLabel();startInterval()">
+<div id="bigbrother_sniper" class="tab-pane fade" ng-controller="BigbrotherSniperCheckController" ng-init="loadListLocation();startInterval()">
     <div class="panel panel-default">
-        <div class="panel-heading">규칙<i class="fa fa-cog fa-spin" ng-click="modalUp()" style="cursor:pointer;float: right; font-size:24px"></i></div>
+        <div class="panel-heading">규칙<i class="fa fa-cog fa-spin" ng-click="locationModalUp()" style="cursor:pointer;float: right; font-size:24px"></i></div>
             <div class="panel-body">
-                <!--text-->
+              <!--location-->
                      {% verbatim %}
-                <div class="well" ng-repeat="textFilter in textFilters">
+                <div class="well" ng-repeat="location in locations">
+                    <i class="fa fa-cog fa-spin" ng-click="RuleModalUp(location.pk, location.uuid, location.range, location.location)" style="cursor:pointer; font-size:24px"></i>
                     <table><tr>
-                        <element ng-bind-html="textFilterTable(textFilter.drop_on_flag, textFilter.text_value, textFilter.explain, textFilter.location, textFilter.range)"></element>
+                        <element ng-bind-html="locationTable(location.location, location.uuid, location.range)"></element>
+                        <button id="{{location.pk}}" type="button" class="btn btn-default" style="float: right;height:40px;margin-top:-9px;" ng-click="clicklocationdelete($event.target)">삭제</button>
+                    </tr></table>
+                    <hr>
+
+                    <div class="modal fade" id="deletelocation" role="dialog">
+                        <div class="modal-dialog" >
+                          <!-- Modal content-->
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                    <h4 class="modal-title">경고</h4>
+                                </div>
+                                <div class="modal-body">
+                                    <p>정말 삭제 하시겠습니까?</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="submit" class="btn btn-default" data-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-danger" data-dismiss="modal" ng-click="deleteLocationList();">Delete</button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="well" ng-repeat="textFilter in location.textFilters">
+                    <table><tr>
+                        <element ng-bind-html="textFilterTable(textFilter.drop_on_flag, textFilter.text_value, textFilter.explain, textFilter.location, textFilter.range, textFilter.picRequest)"></element>
                         <button id="{{textFilter.id}}" type="button" class="btn btn-default" style="float: right;height:40px;margin-top:-9px;" ng-click="clickdelete($event.target)">삭제</button>
                     </tr></table>
 
@@ -180,7 +208,7 @@
                                 </div>
                                 <div class="modal-footer">
                                     <button type="submit" class="btn btn-default" data-dismiss="modal">Close</button>
-                                    <button type="button" class="btn btn-danger" data-dismiss="modal" ng-click="deleteAlertFilterText();loadFilterListText();loadFilterListLabel()">Delete</button>
+                                    <button type="button" class="btn btn-danger" data-dismiss="modal" ng-click="deleteAlertFilterText();">Delete</button>
                                 </div>
                             </div>
 
@@ -189,13 +217,9 @@
 
                 </div>
 
-                <hr>
-			{% endverbatim %}
-                    <!--label--><script></script>
-                     {% verbatim %}
-                <div class="well" ng-repeat="labelFilter in labelFilters">
+                    <div class="well" ng-repeat="labelFilter in location.labelFilters">
                     <table><tr>
-                        <element ng-bind-html="labelFilterTable(labelFilter.drop_on_flag, labelFilter.label_value, labelFilter.explain, labelFilter.location, labelFilter.range)"></element>
+                        <element ng-bind-html="labelFilterTable(labelFilter.drop_on_flag, labelFilter.label_value, labelFilter.explain, labelFilter.location, labelFilter.range, labelFilter.picRequest)"></element>
                         <button id="{{labelFilter.id}}" type="button" class="btn btn-default" style="float: right;height:40px;margin-top:-9px;" ng-click="clickdelete2($event.target)">삭제</button>
                     </tr></table>
                     <div class="modal fade" id="deleteLabel" role="dialog">
@@ -220,11 +244,45 @@
 
                 </div>
 
-                <hr>
-			    {% endverbatim %}
+                </div>
+
+			{% endverbatim %}
 
         <!--필터 규칙 설정-->
-    <div class="modal fade" id="beaconReachSetting" role="dialog" aria-labelledby="settingTitle" aria-hidden="true">
+    <div class="modal fade" id="locationSetting" role="dialog" aria-labelledby="settingTitle" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">닫기</span>
+                    </button><link rel="stylesåheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+                    <h4 class="modal-title" id="LocationSettingTitle">인식 필터값 설정 <i class="fa fa-question-circle-o" data-toggle="explainIcon2" data-trigger="hover" title="인식 필터값 설정이란" data-html="true" data-content="필터:걸러 낼 값<br>explain:설명(주석)<br>옵션1)텍스트인식과 사물인식<br>옵션2)alert(알림), drop(삭제) " data-placement="right"></i> </h4>
+                </div>
+                <div class="modal-body">
+
+                    <div class="form-group">
+                        <input type="text" name="uuid" id="uuid" data-toggle="popover" data-trigger="focus" class="form-control" tabindex="1" placeholder="비콘 UUID" value="uuid" ng-model="createLocationMaker.uuid">
+                    </div>
+
+                    <div class="form-group">
+                        <input type="text" name="location" id="location" data-toggle="popover" data-trigger="focus" class="form-control" tabindex="1" placeholder="장소" value="location" ng-model="createLocationMaker.location">
+                    </div>
+
+                    <div class="form-group">
+                        <input type="number" min="0" max="7000" name="maxRange" id="maxRange" data-toggle="popover" data-trigger="focus" class="form-control" tabindex="1" placeholder="범위 (cm)" value="maxRange" ng-model="createLocationMaker.maxRange">
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" ng-click="createLocationMaker();startInterval()" data-dismiss="modal">Save</button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="ruleSetting" role="dialog" aria-labelledby="settingTitle" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -233,18 +291,13 @@
                     <h4 class="modal-title" id="settingTitle">인식 필터값 설정 <i class="fa fa-question-circle-o" data-toggle="explainIcon2" data-trigger="hover" title="인식 필터값 설정이란" data-html="true" data-content="필터:걸러 낼 값<br>explain:설명(주석)<br>옵션1)텍스트인식과 사물인식<br>옵션2)alert(알림), drop(삭제) " data-placement="right"></i> </h4>
                 </div>
                 <div class="modal-body">
-                    <select ng-model="selectedUuid" style="width:100%;" ng-change="uuidListClick();" ng-mouseover="beaconListView()">
-                        <option ng-selected="selected" value=-1324>모든 지역</option>
-                        {% verbatim %}
-                        <option ng-repeat="Beacon in BeaconList" value="{{Beacon.pk}}">{{Beacon.location}}</option>
-                        {% endverbatim %}
-                    </select>
                     <div class="form-group">
-                        {% verbatim %}{{range}}<element ng-bind-html="ruleSettingAboutRange()"></element>{% endverbatim %}
-
-                        <input type="text" name="range" id="range" data-toggle="popover" data-trigger="focus" class="form-control" tabindex="1" placeholder="범위 (cm)" value="range" ng-model="createRuleMaker.range">
+                        {% verbatim %}{{range}}<element ng-bind-html="ruleSettingAboutDialog()"></element>{% endverbatim %}
                      </div>
                     <hr><br>
+                    <div class="form-group">
+                                <input type="text" name="range" id="range" data-toggle="popover" data-trigger="focus" class="form-control" tabindex="1" placeholder="범위 (cm)" value="range" ng-model="createRuleMaker.range">
+                     </div>
                     <div class="form-group">
                                 <input type="text" name="filter" id="filter" data-toggle="popover" data-trigger="focus" tabindex="1" class="form-control"  placeholder="필터 " value="filter" ng-model="createRuleMaker.filter">
                      </div>
@@ -260,7 +313,9 @@
                         <input type="radio" name="dropFlag" value="0"ng-model="createRuleMaker.dropFlag">Alert
                         <input type="radio" name="dropFlag" value="1" ng-model="createRuleMaker.dropFlag">Drop<br>
                     </form>
-
+                    <form>
+                        <input type="checkbox" name="picRequest" value="1" ng-model="createRuleMaker.picRequest">촬영 사진 요청<br>
+                    </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>

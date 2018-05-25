@@ -55,9 +55,16 @@ class IdRequestSerializer(serializers.Serializer):
     id = serializers.CharField()
 
 class PostAlertMessageLogtSerializer(serializers.Serializer):
-    keyword = serializers.CharField(max_length=72)
     drop_on_flag = serializers.BooleanField(default=False)
     pictureBase64 = serializers.CharField(max_length=1024000, default='')
+    pk = serializers.ListField(
+        child=serializers.IntegerField()
+    )
+    label_value = serializers.ListField(
+        child=serializers.CharField()
+    )
+
+
 
 class BigbrotherRuleManager(serializers.Serializer):
     filter = serializers.CharField(max_length=36)
@@ -66,6 +73,13 @@ class BigbrotherRuleManager(serializers.Serializer):
     val = serializers.IntegerField()
     pk = serializers.IntegerField()
     range = serializers.IntegerField()
+    picRequest = serializers.BooleanField()
+
+class BigbrotherLocationManager(serializers.Serializer):
+    uuid = serializers.UUIDField()
+    location = serializers.CharField()
+    maxRange = serializers.IntegerField()
+
 
 class DateListenerSerializer(serializers.Serializer):
     date = serializers.CharField(max_length=11)

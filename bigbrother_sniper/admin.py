@@ -9,6 +9,7 @@ from bigbrother_sniper.models import (
                                      DateRecord,
                                      LocationList,
                                      UserActiveLog,
+                                     UserActiveDateRecord
 
                                      )
 
@@ -23,6 +24,8 @@ admin.site.register(GuardOrUtilImageSavezone)
 admin.site.register(DateRecord)
 admin.site.register(LocationList)
 admin.site.register(UserActiveLog)
+admin.site.register(UserActiveDateRecord)
+
 
 
 
